@@ -5,7 +5,6 @@ server.basics:
         commandbook.motd: true
         commandbook.say: true
         commandbook.say.me: true
-        commandbook.time: true
 server.admin:
     description: Admin permissions
     default: op
