@@ -7,7 +7,7 @@ settings:
     type: bool
     default: true
     description: New players can build
-    hint: If checked new players are able to place and destroy blocks
+    hint: New players are able to place and destroy blocks
 
 addons:
   backup:
