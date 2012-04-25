@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+
+# usage: server | prepare
+# transforms server output to minefold friendly output
+# for the most part bukkit output looks like Minecraft output
+# but some lines need transforming
+# TODO: the output should be more game neutral (ie. not look like Minecraft)
+
+require 'time'
+
+STDOUT.sync = true
+
+# the output lines that Minefold cares about:
+# server_ready
+# player_chat
+# player_list
+# player_connected
+# player_disconnected
+# player_opped
+# player_deopped
+# player_whitelisted
+# player_unwhitelisted
+# player_banned
+# player_pardoned
+# player_verified
+
+lines = {
+  :player_opped => [/(\w+): Opping (\w+)/, '\1 issued server command: op \2'],
+  :player_deopped => [/(\w+): De-opping (\w+)/, '\1 issued server command: deop \2'],
+  :player_whitelisted => [/(\w+): Added (\w+) to white-list/, '\1 issued server command: whitelist add \2'],
+  :player_dewhitelisted => [/(\w+): Removed (\w+) from white-list/, '\1 issued server command: whitelist remove \2'],
+  :player_command => [/(\w+): \/(\w+) (\w+)/, '\1 issued server command: \2 \3'],
+}
+
+ARGF.each_line do |line|
+  line = line.gsub(/\e\[\d+m/, '') # strip color sequences out
+  line =~ /(\d{2}:\d{2}:\d{2})\s\[(\w+)\]\s+(.*)/
+
+  timestamp = $1
+  level = $2
+  message = $3
+
+  type, match = lines.find {|type, match| message =~ match.first }
+
+  prefix = "#{timestamp} [#{level}]"
+  if type
+    regex, replacement = match
+
+    message = message.sub(regex, replacement)
+  end
+
+  puts "#{prefix} #{message}"
+end

@@ -1,0 +1,16 @@
+server.basics:
+    description: Basic permissions for My Cool Server.
+    default: true
+    children:
+        commandbook.motd: true
+        commandbook.say: true
+        commandbook.say.me: true
+        commandbook.time: true
+server.admin:
+    description: Admin permissions for My Cool Server.
+    default: op
+    children:
+        commandbook.broadcast: true
+        commandbook.teleport: true
+        commandbook.kick: true
+        commandbook.ban: true

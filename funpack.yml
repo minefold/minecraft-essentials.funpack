@@ -1,0 +1,17 @@
+id: essentials
+description: Minecraft Essentials Mod Pack
+version: 1.0
+
+settings:
+  - id: new_player_can_build
+    type: bool
+    default: true
+    description: New players can build
+    hint: If checked new players are able to place and destroy blocks
+
+addons:
+  backup:
+    ignore: |
+      craftbukkit.jar
+      server.log
+      server.properties

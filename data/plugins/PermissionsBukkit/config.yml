@@ -1,0 +1,31 @@
+# PermissionsBukkit configuration file
+users:
+  whatupdave:
+    permissions:
+      permissions.example: true
+    groups:
+    - admin
+  minefold_guest:
+    groups:
+    - default
+    - user
+groups:
+  default:
+    permissions:
+      permissions.build: false
+  admin:
+    permissions:
+      permissions.*: true
+    inheritance:
+    - user
+  user:
+    permissions:
+      permissions.build: true
+    worlds:
+      creative:
+        coolplugin.item: true
+    inheritance:
+    - default
+messages:
+  build: '&cYou do not have permission to build here.'
+debug: false

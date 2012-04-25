@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+# usage: prepare <world_path> <options_json_file>
+# prepares the world to run
+# before this runs, the world will be pulled down and stored at world_path
+
+server_path = ARGV.shift
+root = File.expand_path File.join __FILE__, '../..'
+
+system %Q{
+  cp -R #{root}/data/* #{server_path}
+}
