@@ -12,4 +12,3 @@ server.admin:
         commandbook.broadcast: true
         commandbook.teleport: true
         commandbook.kick: true
-        commandbook.ban: true
