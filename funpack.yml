@@ -1,12 +1,16 @@
-id: essentials
-description: Minecraft Essentials Mod Pack
+name: Minecraft Essentials
+description: >
+  Essentials
+  WorldEdit
+  WorldGuard
+
 version: 1.0
 
 settings:
-  - id: new_player_can_build
+  - name: new_player_can_build
     type: bool
     default: true
-    description: New players can build
+    label: New players can build
     hint: New players are able to place and destroy blocks
 
 addons:

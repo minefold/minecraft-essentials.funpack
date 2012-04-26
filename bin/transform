@@ -35,19 +35,21 @@ lines = {
 ARGF.each_line do |line|
   line = line.gsub(/\e\[\d+m/, '') # strip color sequences out
   line =~ /(\d{2}:\d{2}:\d{2})\s\[(\w+)\]\s+(.*)/
+  if timestamp = $1
+    level = $2
+    message = $3
 
-  timestamp = $1
-  level = $2
-  message = $3
+    type, match = lines.find {|type, match| message =~ match.first }
 
-  type, match = lines.find {|type, match| message =~ match.first }
+    prefix = "#{timestamp} [#{level}]"
+    if type
+      regex, replacement = match
 
-  prefix = "#{timestamp} [#{level}]"
-  if type
-    regex, replacement = match
+      message = message.sub(regex, replacement)
+    end
 
-    message = message.sub(regex, replacement)
+    puts "#{prefix} #{message}"
+  else
+    puts line
   end
-
-  puts "#{prefix} #{message}"
 end

@@ -1,12 +1,29 @@
 #!/usr/bin/env ruby
 
-# usage: prepare <world_path> <options_json_file>
+require 'json'
+require 'erb'
+
+root = File.expand_path File.join __FILE__, '../..'
+
+# usage: prepare <world_path> <settings_json_file>
 # prepares the world to run
 # before this runs, the world will be pulled down and stored at world_path
 
-server_path = ARGV.shift
-root = File.expand_path File.join __FILE__, '../..'
+server_path = File.expand_path(ARGV.shift)
+settings_json_file = ARGV.shift
 
-system %Q{
-  cp -R #{root}/data/* #{server_path}
-}
+settings = JSON.parse(File.read(settings_json_file))
+
+Dir.chdir('template') do
+  Dir["**/*"].reject{|f| File.directory? f }.each do |file|
+    dest = File.join server_path, File.dirname(file), File.basename(file, '.erb')
+    `mkdir -p #{File.dirname(dest)}`
+
+    if File.extname(file) == '.erb'
+      template = ERB.new(File.read(file))
+      File.write(dest, template.result)
+    else
+      `cp #{file} #{dest}`
+    end
+  end
+end
