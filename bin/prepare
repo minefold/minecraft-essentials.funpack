@@ -14,7 +14,7 @@ settings_json_file = ARGV.shift
 
 settings = JSON.parse(File.read(settings_json_file))
 
-Dir.chdir('template') do
+Dir.chdir("#{root}/template") do
   Dir["**/*"].reject{|f| File.directory? f }.each do |file|
     dest = File.join server_path, File.dirname(file), File.basename(file, '.erb')
     `mkdir -p #{File.dirname(dest)}`
