@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# bin/backup <world-dir>
+# creates a tar stream of stuff to be backed up
+
+# fail fast
+set -e
+
+# parse args
+WORLD_DIR=$(cd $1; pwd)
+CACHE_DIR=$(cd $2; pwd)
+
+cd $WORLD_DIR
+tar c level level_nether level_the_end plugins ops.txt white-list.txt permissions.yml
