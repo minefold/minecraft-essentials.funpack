@@ -15,7 +15,7 @@ groups:
       permissions.*: true
     inheritance:
     - user
-<% if settings['new_player_can_build'] %>
+<% if @pack_options['new_player_can_build'] %>
   default:
 <% else %>
   builder:
@@ -27,7 +27,7 @@ groups:
         coolplugin.item: true
     inheritance:
     - default
-<% unless settings['new_player_can_build'] %>
+<% unless @pack_options['new_player_can_build'] %>
   default:
     permissions:
       permissions.build: false

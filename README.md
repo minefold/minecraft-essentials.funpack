@@ -1,0 +1,5 @@
+# Plugins
+
+Essentials
+WorldGuard
+LWC
