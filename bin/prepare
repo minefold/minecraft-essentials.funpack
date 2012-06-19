@@ -3,6 +3,7 @@
 require 'json'
 require 'erb'
 require 'find'
+require 'yaml'
 
 ROOT = File.expand_path File.join __FILE__, '../..'
 
@@ -35,6 +36,49 @@ def write_server_properties world_dir, level_name, options
   File.write "#{world_dir}/server.properties", template.result(binding)
 end
 
+def write_permissions world_dir, options
+  permissions = {
+    users: {},
+    groups: {
+      admins: {
+        permissions: {
+          'permissions.*' => true
+        },
+      },
+      default: {}
+    },
+    messages: {
+      build: '&cYou do not have permission to build here.'
+    }
+  }
+
+  unless options['new_player_can_build']
+    permissions[:groups][:builders] = {
+      inheritance: ['default'],
+      permissions: {
+        'permissions.build' => true
+      }
+    }
+    permissions[:groups][:default][:permissions] = {
+      'permissions.build' => false
+    }
+  end
+
+  options['ops'].each do |player|
+    permissions[:users][player] = {
+      groups: ['admins']
+    }
+  end
+
+  options['whitelisted'].each do |player|
+    permissions[:users][player] = {
+      groups: ['default']
+    }
+  end
+
+  File.write "#{world_dir}/plugins/PermissionsBukkit/config.yml", YAML.dump(permissions)
+end
+
 def download_server_jar url, world_dir
   puts `curl --silent --show-error -RL #{url} -o '#{world_dir}/server.jar'`
 end
@@ -62,6 +106,7 @@ Dir.chdir("#{ROOT}/template") do
 end
 
 write_server_properties world_dir, @level_name, @pack_options
+# write_permissions world_dir, @pack_options
 
 File.write "#{world_dir}/ops.txt", @pack_options['ops'].join("\n")
 File.write "#{world_dir}/white-list.txt", @pack_options['whitelisted'].join("\n")

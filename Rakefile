@@ -4,7 +4,7 @@ task :test do
   system %Q{
     rm -rf tmp/world
     mkdir -p tmp/world
-    cp -R test-bukkit-world/* tmp/world
+    cp -R test-world/* tmp/world
   }
 
   File.write 'tmp/world/settings.json', <<-EOS
