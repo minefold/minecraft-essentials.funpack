@@ -27,3 +27,8 @@ task :test do
   raise "error" unless system "bin/prepare tmp/world tmp/world/settings.json"
   raise "error" unless system "bin/start tmp/world 4032 1024"
 end
+
+desc "Update Bukkit server"
+task :update_bukkit do
+  system "curl -L http://dl.bukkit.org/downloads/craftbukkit/get/01249_1.2.5-R5.0/craftbukkit.jar > template/craftbukkit.jar"
+end
