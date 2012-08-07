@@ -30,5 +30,5 @@ end
 
 desc "Update Bukkit server"
 task :update_bukkit do
-  system "curl -L http://dl.bukkit.org/downloads/craftbukkit/get/01249_1.2.5-R5.0/craftbukkit.jar > template/craftbukkit.jar"
+  system "curl -L http://dl.bukkit.org/downloads/craftbukkit/get/01332_1.3.1-R1.0/craftbukkit.jar > template/craftbukkit.jar"
 end
