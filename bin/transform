@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# encoding: ISO-8859-1
+
 # usage: server | prepare
 # transforms server output to minefold friendly output
 # for the most part bukkit output looks like Minecraft output
@@ -33,7 +35,7 @@ lines = {
 }
 
 ARGF.each_line do |line|
-  line = line.gsub(/\e\[\d+m/, '') # strip color sequences out
+  line = line.force_encoding('ISO-8859-1').gsub(/\e\[\d+m/, '') # strip color sequences out
   line =~ /(\d{2}:\d{2}:\d{2})\s\[(\w+)\]\s+(.*)/
   if timestamp = $1
     level = $2
