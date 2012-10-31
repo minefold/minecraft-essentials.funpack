@@ -5,11 +5,11 @@ require 'erb'
 require 'find'
 require 'yaml'
 
-ROOT = File.expand_path File.join __FILE__, '../..'
+FUNPACK = File.expand_path File.join __FILE__, '../..'
 
-# usage: prepare <world-path> <start-options>
+# usage: prepare <settings>
 # prepares the world to run
-# before this runs, the world will be pulled down and stored at world_path
+# run this from the directory the world is in
 
 def level_paths world_dir
   Dir.chdir world_dir do
@@ -31,9 +31,9 @@ def parse_options json_file
   json_file ? JSON.parse(File.read(json_file)) : {}
 end
 
-def write_server_properties world_dir, level_name, options
-  template = ERB.new(File.read("#{ROOT}/template/server.properties.erb"))
-  File.write "#{world_dir}/server.properties", template.result(binding)
+def write_server_properties level_name, options
+  template = ERB.new(File.read("#{FUNPACK}/template/server.properties.erb"))
+  File.write "server.properties", template.result(binding)
 end
 
 def write_permissions world_dir, options
@@ -84,30 +84,33 @@ def download_server_jar url, world_dir
 end
 
 # args
-world_dir = File.expand_path(ARGV.shift)
 start_options_file = ARGV.shift
 
 start_options = parse_options(start_options_file)
-@pack_options = start_options['options']
-@level_name = level_path(world_dir) || 'level'
+@port = start_options['port']
+@pack_options = start_options['settings']
+@level_name = level_path('.') || 'level'
 
-Dir.chdir("#{ROOT}/template") do
+working_dir = `pwd`.strip
+
+Dir.chdir("#{FUNPACK}/template") do
   Dir["**/*"].reject{|f| File.directory? f }.each do |file|
-    dest = File.join world_dir, File.dirname(file), File.basename(file, '.erb')
+    dest = File.join working_dir, File.dirname(file), File.basename(file, '.erb')
     `mkdir -p #{File.dirname(dest)}`
 
     if File.extname(file) == '.erb'
       template = ERB.new(File.read(file))
       File.write(dest, template.result)
     else
+      puts "cp #{file} #{dest}"
       `cp #{file} #{dest}`
     end
   end
 end
 
-write_server_properties world_dir, @level_name, @pack_options
+write_server_properties @level_name, @pack_options
 # write_permissions world_dir, @pack_options
 
-File.write "#{world_dir}/ops.txt", @pack_options['ops'].join("\n")
-File.write "#{world_dir}/white-list.txt", @pack_options['whitelisted'].join("\n")
-File.write "#{world_dir}/banned-players.txt", @pack_options['banned'].join("\n")
+File.write "ops.txt", @pack_options['ops'].join("\n")
+File.write "white-list.txt", @pack_options['whitelisted'].join("\n")
+File.write "banned-players.txt", @pack_options['banned'].join("\n")
