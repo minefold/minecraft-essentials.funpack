@@ -64,13 +64,13 @@ def write_permissions world_dir, options
     }
   end
 
-  options['ops'].each do |player|
+  options['ops'].split("\n").each do |player|
     permissions[:users][player] = {
       groups: ['admins']
     }
   end
 
-  options['whitelisted'].each do |player|
+  options['whitelist'].split("\n").each do |player|
     permissions[:users][player] = {
       groups: ['default']
     }
@@ -102,7 +102,6 @@ Dir.chdir("#{FUNPACK}/template") do
       template = ERB.new(File.read(file))
       File.write(dest, template.result)
     else
-      puts "cp #{file} #{dest}"
       `cp #{file} #{dest}`
     end
   end
@@ -111,6 +110,6 @@ end
 write_server_properties @level_name, @pack_options
 # write_permissions world_dir, @pack_options
 
-File.write "ops.txt", @pack_options['ops'].join("\n")
-File.write "white-list.txt", @pack_options['whitelisted'].join("\n")
-File.write "banned-players.txt", @pack_options['banned'].join("\n")
+File.write "ops.txt", @pack_options['ops']
+File.write "white-list.txt", @pack_options['whitelist']
+File.write "banned-players.txt", @pack_options['blacklist']
