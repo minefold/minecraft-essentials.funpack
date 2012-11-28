@@ -1,0 +1,155 @@
+#!/usr/bin/env ruby
+
+# usage: run <server-json>
+# runs the server
+
+require 'json'
+require 'time'
+
+STDOUT.sync = true
+STDIN.sync = true
+
+server_json = ARGV.first
+HUMAN_FRIENDLY = ARGV.include? "-h"
+bin = File.expand_path File.join(__FILE__, '..')
+
+server_settings = JSON.parse(File.read(server_json))
+system "#{bin}/prepare #{server_json}"
+
+ram_min, ram_max = server_settings['ram']['min'], server_settings['ram']['max']
+
+# Events:
+# started
+# stopping
+# player_connected      { username: '..' }
+# player_disconnected
+# chatted
+# opped
+# deopped
+# whitelist_added
+# whitelist_removed
+# banned
+# pardoned
+# info
+# warning
+# critical
+
+class LogProcessor
+  def initialize pid
+    @pid = pid
+    @listing = false
+  end
+
+  def process_line line
+    line = line.force_encoding('ISO-8859-1').
+              gsub(/\e\[\d+m/, ''). # strip color sequences out
+              gsub(/>\r[\d:]+\s\[[A-Z]+\]\s/, '').strip  # strip message prefix
+
+    if @listing
+      players_listing(line)
+    else
+      case
+      when line.include?('Done (')
+        event 'started'
+
+      when line == 'Stopping server'
+        event 'stopping'
+
+      when line =~ /^(\w+).*logged in with entity id/
+        event 'player_connected', username: $1
+
+      when line =~ /^(\w+) lost connection: (.*)$/
+        event 'player_disconnected', username: $1, reason: $2
+
+      when line =~ /^There are (\d+)\/(\d+) players online:$/
+        @listing = true
+        @online = $1.to_i
+        @players = []
+
+      when line =~ /^(\w+) issued server command: \/(\w+) ([\w+ ]+)$/
+        process_setting_changed $1, $2, $3
+
+      when line.include?('FAILED TO BIND TO PORT!')
+        event 'fatal_error'
+        Process.kill :TERM, @pid
+
+      else
+        event 'info', msg: line.strip
+      end
+    end
+
+    def settings_changed actor, key, value
+      event 'settings_changed',
+        actor: actor,
+          key: key,
+          value: value.to_s
+    end
+
+    def process_setting_changed actor, method, target
+      case method
+      when 'whitelist'
+        op, target = target.split(' ')
+        settings_changed actor, "whitelist_#{op}", target
+
+      when 'ban'
+        settings_changed actor, 'blacklist_add', target
+
+      when 'pardon'
+        settings_changed actor, 'blacklist_remove', target
+
+      when 'op'
+        settings_changed actor, 'ops_add', target
+
+      when 'deop'
+        settings_changed actor, 'ops_remove', target
+
+      when 'defaultgamemode'
+        settings_changed actor, 'game_mode', target
+
+      when 'difficulty'
+        modes = %w(peaceful easy normal hard)
+        settings_changed actor, 'difficulty', modes.index(target.downcase)
+      end
+    end
+  end
+
+  def players_listing(line)
+    @players += line.split(',').map(&:strip)
+    if @players.size == @online
+      @listing = false
+      event 'players_list', usernames: @players
+    end
+  end
+
+  def readable type, options={}
+    "#{Time.now.utc.strftime('%Y-%b-%d %H:%M:%S')} [#{type}] " +
+      options.map{|k,v| "#{k}=#{v.include?(' ') ? ("\"" + v + "\"") : v}"}.join(' ')
+  end
+
+  def json type, options={}
+    args = {ts: Time.now.utc.iso8601, event: type, pid: @pid }.merge(options)
+    JSON.dump(args)
+  end
+
+  def event type, options = {}
+    line = if HUMAN_FRIENDLY
+      readable type, options
+    else
+      json type, options
+    end
+    puts line
+  end
+end
+
+IO.popen(["java",
+            "-Xms#{ram_min}M", "-Xmx#{ram_max}M",
+            "-jar", "craftbukkit.jar",
+            "nogui", :err => [:child, :out]]) do |io|
+  begin
+    processor = LogProcessor.new(io.pid)
+    while true
+      processor.process_line io.readline
+    end
+  rescue EOFError
+  end
+end

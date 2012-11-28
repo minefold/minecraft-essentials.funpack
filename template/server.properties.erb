@@ -9,15 +9,15 @@ level-name=<%= @level_name %>
 level-seed=<%= @pack_options['seed'] %>
 level-type=<%= @pack_options['level_type'] || 'DEFAULT' %>
 max-build-height=256
-max-players=32
+max-players=512
 motd=Minefold
 online-mode=true
 pvp=<%= @pack_options['pvp'] || 'true' %>
 server-ip=0.0.0.0
-server-port=25565
+server-port=<%= @port || '25565' %>
 spawn-animals=<%= @pack_options['spawn_animals'] || 'false' %>
 spawn-monsters=<%= @pack_options['spawn_monsters'] || 'false' %>
 spawn-npcs=<%= @pack_options['spawn_npcs'] || 'true' %>
 texture-pack=
 view-distance=10
-white-list=false
+white-list=true
