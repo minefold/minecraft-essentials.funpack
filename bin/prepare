@@ -93,6 +93,10 @@ start_options = parse_options(start_options_file)
 
 working_dir = `pwd`.strip
 
+def bool(field, default)
+  ['1', 'true'].include?((@pack_options[field] || default).to_s)
+end
+
 Dir.chdir("#{FUNPACK}/template") do
   Dir["**/*"].reject{|f| File.directory? f }.each do |file|
     dest = File.join working_dir, File.dirname(file), File.basename(file, '.erb')

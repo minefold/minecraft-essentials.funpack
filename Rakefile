@@ -22,8 +22,8 @@ task :test do
     "new_player_can_build" : false,
     "ops": "whatupdave\\nchrislloyd",
     "seed": 123456789,
-    "spawn_animals": true,
-    "spawn_monsters": true,
+    "spawn_animals": "1",
+    "spawn_monsters": "1",
     "whitelist": "whatupdave\\nchrislloyd"
   }
 }

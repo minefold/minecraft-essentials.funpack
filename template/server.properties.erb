@@ -4,7 +4,7 @@ difficulty=<%= @pack_options['difficulty'] || 1 %>
 enable-query=false
 enable-rcon=false
 gamemode=<%= @pack_options['game_mode'] || 0 %>
-generate-structures=<%= @pack_options['generate_structures'] || true %>
+generate-structures=<%= bool('generate_structures', true) %>
 level-name=<%= @level_name %>
 level-seed=<%= @pack_options['seed'] %>
 level-type=<%= @pack_options['level_type'] || 'DEFAULT' %>
@@ -12,12 +12,12 @@ max-build-height=256
 max-players=512
 motd=Minefold
 online-mode=true
-pvp=<%= @pack_options['pvp'] || 'true' %>
+pvp=<%= bool('pvp', true) %>
 server-ip=0.0.0.0
 server-port=<%= @port || '25565' %>
-spawn-animals=<%= @pack_options['spawn_animals'] || 'false' %>
-spawn-monsters=<%= @pack_options['spawn_monsters'] || 'false' %>
-spawn-npcs=<%= @pack_options['spawn_npcs'] || 'true' %>
+spawn-animals=<%= bool('spawn_animals', false) %>
+spawn-monsters=<%= bool('spawn_monsters', false) %>
+spawn-npcs=<%= bool('spawn_npcs', true) %>
 texture-pack=
 view-distance=10
 white-list=true

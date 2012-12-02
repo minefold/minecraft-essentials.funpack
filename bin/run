@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# encoding: UTF-8
+
 # usage: run <server-json>
 # runs the server
 
@@ -42,34 +44,37 @@ class LogProcessor
 
   def process_line line
     line = line.force_encoding('ISO-8859-1').
-              gsub(/\e\[\d+m/, ''). # strip color sequences out
-              gsub(/>\r[\d:]+\s\[[A-Z]+\]\s/, '').strip  # strip message prefix
+      gsub(/\u001b\[(m|\d+;\dm)?/, ''). # strip color sequences out
+      gsub(/>\r[\d:]+\s\[[A-Z]+\]\s/, '').strip  # strip message prefix
 
     if @listing
       players_listing(line)
     else
-      case
-      when line.include?('Done (')
+      case line
+      when /Done \(/
         event 'started'
 
-      when line == 'Stopping server'
+      when /^<(\w+)> (.*)$/
+        event 'chat', username: $1, msg: $2
+
+      when 'Stopping server'
         event 'stopping'
 
-      when line =~ /^(\w+).*logged in with entity id/
+      when /^(\w+).*logged in with entity id/
         event 'player_connected', username: $1
 
-      when line =~ /^(\w+) lost connection: (.*)$/
+      when /^(\w+) lost connection: (.*)$/
         event 'player_disconnected', username: $1, reason: $2
 
-      when line =~ /^There are (\d+)\/(\d+) players online:$/
+      when /^There are (\d+)\/(\d+) players online:$/
         @listing = true
         @online = $1.to_i
         @players = []
 
-      when line =~ /^(\w+) issued server command: \/(\w+) ([\w+ ]+)$/
+      when /^(\w+) issued server command: \/(\w+) ([\w+ ]+)$/
         process_setting_changed $1, $2, $3
 
-      when line.include?('FAILED TO BIND TO PORT!')
+      when /FAILED TO BIND TO PORT!/
         event 'fatal_error'
         Process.kill :TERM, @pid
 
