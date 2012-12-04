@@ -47,9 +47,8 @@ class LogProcessor
       gsub(/\u001b\[(m|\d+;\dm)?/, ''). # strip color sequences out
       gsub(/>\r[\d:]+\s\[[A-Z]+\]\s/, '').strip  # strip message prefix
 
-    if @listing
-      players_listing(line)
-    else
+    p line
+    unless collect_player_list(line)
       case line
       when /Done \(/
         event 'started'
@@ -66,7 +65,7 @@ class LogProcessor
       when /^(\w+) lost connection: (.*)$/
         event 'player_disconnected', username: $1, reason: $2
 
-      when /^There are (\d+)\/(\d+) players online:$/
+      when /^There are (\d+) out of maximum (\d+) players online.$/
         @listing = true
         @online = $1.to_i
         @players = []
@@ -118,11 +117,16 @@ class LogProcessor
     end
   end
 
-  def players_listing(line)
-    @players += line.split(',').map(&:strip)
-    if @players.size == @online
-      @listing = false
-      event 'players_list', usernames: @players
+  def collect_player_list(line)
+    return false unless @listing
+
+    if line =~ /^Connected players:(.*)$/
+      @players += $1.split(',').map(&:strip)
+      if @players.size == @online || @players.size == 0
+        event 'players_list', usernames: @players
+        @listing = false
+      end
+      true
     end
   end
 

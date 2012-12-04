@@ -34,7 +34,7 @@ auto-updater:
   on-update:
   - warn-console
   - warn-ops
-  preferred-channel: rb
+  preferred-channel: beta
   host: dl.bukkit.org
   suggest-channels: true
 database:
