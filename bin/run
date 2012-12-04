@@ -47,7 +47,6 @@ class LogProcessor
       gsub(/\u001b\[(m|\d+;\dm)?/, ''). # strip color sequences out
       gsub(/>\r[\d:]+\s\[[A-Z]+\]\s/, '').strip  # strip message prefix
 
-    p line
     unless collect_player_list(line)
       case line
       when /Done \(/
