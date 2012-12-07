@@ -7,12 +7,17 @@
 
 require 'json'
 require 'time'
+require 'set'
+require 'open3'
+
+$:.unshift File.expand_path('../../lib', __FILE__)
+
+require 'log_processor'
 
 STDOUT.sync = true
 STDIN.sync = true
 
 server_json = ARGV.first
-HUMAN_FRIENDLY = ARGV.include? "-h"
 bin = File.expand_path File.join(__FILE__, '..')
 
 server_settings = JSON.parse(File.read(server_json))
@@ -20,149 +25,37 @@ system "#{bin}/prepare #{server_json}"
 
 ram_min, ram_max = server_settings['ram']['min'], server_settings['ram']['max']
 
-# Events:
-# started
-# stopping
-# player_connected      { username: '..' }
-# player_disconnected
-# chatted
-# opped
-# deopped
-# whitelist_added
-# whitelist_removed
-# banned
-# pardoned
-# info
-# warning
-# critical
+# since we can't query bukkit player list without getting nicknames and weird
+# stuff, cache the player connects and disconnects
+player_cache = Set.new
 
-class LogProcessor
-  def initialize pid
-    @pid = pid
-    @listing = false
-  end
-
-  def sanitize_username(username)
-    # strips roles eg: 37;22m[AFK]whatupdave
-    username.gsub(/^\d+;\d+m\[\w+\]/, '')
-  end
-
-  def process_line line
-    line = line.force_encoding('ISO-8859-1').
-      gsub(/\u001b\[(m|\d+;\dm)?/, ''). # strip color sequences out
-      gsub(/>\r[\d:]+\s\[[A-Z]+\]\s/, '').strip  # strip message prefix
-
-    unless collect_player_list(line)
-      case line
-      when /Done \(/
-        event 'started'
-
-      when /^<(\w+)> (.*)$/
-        event 'chat', username: sanitize_username($1), msg: $2
-
-      when 'Stopping server'
-        event 'stopping'
-
-      when /^(\w+).*logged in with entity id/
-        event 'player_connected', username: sanitize_username($1)
-
-      when /^(\w+) lost connection: (.*)$/
-        event 'player_disconnected', username: sanitize_username($1), reason: $2
-
-      when /^There are (\d+) out of maximum (\d+) players online.$/
-        @listing = true
-        @online = $1.to_i
-        @players = []
-
-      when /^(\w+) issued server command: \/(\w+) ([\w+ ]+)$/
-        process_setting_changed $1, $2, $3
-
-      when /FAILED TO BIND TO PORT!/
-        event 'fatal_error'
-        Process.kill :TERM, @pid
-
-      else
-        event 'info', msg: line.strip
-      end
-    end
-
-    def settings_changed actor, key, value
-      event 'settings_changed',
-        actor: actor,
-          key: key,
-          value: value.to_s
-    end
-
-    def process_setting_changed actor, method, target
-      case method
-      when 'whitelist'
-        op, target = target.split(' ')
-        settings_changed actor, "whitelist_#{op}", target
-
-      when 'ban'
-        settings_changed actor, 'blacklist_add', target
-
-      when 'pardon'
-        settings_changed actor, 'blacklist_remove', target
-
-      when 'op'
-        settings_changed actor, 'ops_add', target
-
-      when 'deop'
-        settings_changed actor, 'ops_remove', target
-
-      when 'defaultgamemode'
-        settings_changed actor, 'game_mode', target
-
-      when 'difficulty'
-        modes = %w(peaceful easy normal hard)
-        settings_changed actor, 'difficulty', modes.index(target.downcase)
-      end
-    end
-  end
-
-  def collect_player_list(line)
-    return false unless @listing
-
-    if line =~ /^Connected players:(.*)$/
-      @players += $1.split(',').map(&:strip).map{|u| sanitize_username(u) }
-      if @players.size == @online || @players.size == 0
-        event 'players_list', usernames: @players
-        @listing = false
-      end
-      true
-    end
-  end
-
-  def readable type, options={}
-    "#{Time.now.utc.strftime('%Y-%b-%d %H:%M:%S')} [#{type}] " +
-      options.map{|k,v| "#{k}=#{v.include?(' ') ? ("\"" + v + "\"") : v}"}.join(' ')
-  end
-
-  def json type, options={}
-    args = {ts: Time.now.utc.iso8601, event: type, pid: @pid }.merge(options)
-    JSON.dump(args)
-  end
-
-  def event type, options = {}
-    line = if HUMAN_FRIENDLY
-      readable type, options
-    else
-      json type, options
-    end
-    puts line
-  end
-end
-
-IO.popen(["java",
+Open3.popen3("java",
             "-Xms#{ram_min}M", "-Xmx#{ram_max}M",
             "-jar", "craftbukkit.jar",
-            "nogui", :err => [:child, :out]]) do |io|
+            "nogui") do |stdin, stdout, stderr, wait_thr|
+
+  processor = LogProcessor.new(wait_thr.pid, player_cache)
+
   begin
-    processor = LogProcessor.new(io.pid)
+    # read stdin. On list command we respond directly
+    # anything else pass through to minecraft
+    Thread.new do
+      while true
+        input = STDIN.readline.strip
+        case input
+        when 'list'
+          processor.event 'players_list', usernames: player_cache.to_a
+
+        else
+          stdin.puts input
+        end
+      end
+    end
+
     while true
-      processor.process_line io.readline
+      processor.process_line stderr.readline
     end
   rescue EOFError
   end
+  exit_status = wait_thr.value
 end
