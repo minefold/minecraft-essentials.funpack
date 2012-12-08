@@ -1,9 +1,8 @@
 # encoding: UTF-8
 
 class LogProcessor
-  def initialize(pid, player_cache)
+  def initialize(pid)
     @pid = pid
-    @player_cache = player_cache
   end
 
   def process_line(line)
@@ -22,12 +21,10 @@ class LogProcessor
       event 'stopping'
 
     when /^(\w+).*logged in with entity id/
-      @player_cache.add($1)
-      event 'player_connected', username: $1, usernames: @player_cache.to_a
+      event 'player_connected', username: $1
 
     when /^(\w+) lost connection: (.*)$/
-      @player_cache.delete($1)
-      event 'player_disconnected', username: $1, reason: $2, usernames: @player_cache.to_a
+      event 'player_disconnected', username: $1, reason: $2
 
     when /^(\w+) issued server command: \/(\w+) ([\w+ ]+)$/
       process_setting_changed $1, $2, $3
@@ -35,6 +32,9 @@ class LogProcessor
     when /FAILED TO BIND TO PORT!/
       event 'fatal_error'
       Process.kill :TERM, @pid
+
+    when /^\[PartyCloud\] connected players:(.*)$/
+      event 'players_list', usernames: $1.split(",")
 
     else
       event 'info', msg: line.strip

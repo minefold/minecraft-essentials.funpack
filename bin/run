@@ -25,30 +25,22 @@ system "#{bin}/prepare #{server_json}"
 
 ram_min, ram_max = server_settings['ram']['min'], server_settings['ram']['max']
 
-# since we can't query bukkit player list without getting nicknames and weird
-# stuff, cache the player connects and disconnects
-player_cache = Set.new
-
 Open3.popen3("java",
             "-Xms#{ram_min}M", "-Xmx#{ram_max}M",
             "-jar", "craftbukkit.jar",
             "nogui") do |stdin, stdout, stderr, wait_thr|
 
-  processor = LogProcessor.new(wait_thr.pid, player_cache)
+  processor = LogProcessor.new(wait_thr.pid)
 
   begin
-    # read stdin. On list command we respond directly
-    # anything else pass through to minecraft
+    # read stdin. On list command we call partylist
+    # which is a custom plugin designed to return the real player names
+    # instead of nicknames
     Thread.new do
       while true
         input = STDIN.readline.strip
-        case input
-        when 'list'
-          processor.event 'players_list', usernames: player_cache.to_a
 
-        else
-          stdin.puts input
-        end
+        stdin.puts(input == 'list' ? 'partylist' : input)
       end
     end
 
