@@ -200,22 +200,22 @@ kits:
 # We recommend not enabling chest protection signs if you don't intend to use them, (or are using LWC/Lockette).
 
 enabledSigns:
-  #- color
-  #- balance
-  #- buy  
-  #- sell
-  #- trade
-  #- free
-  #- disposal
-  #- warp
-  #- kit
-  #- mail
-  #- enchant
-  #- gamemode
-  #- heal
-  #- spawnmob
-  #- time
-  #- weather
+  - color
+  - balance
+  - buy
+  - sell
+  - trade
+  - free
+  - disposal
+  - warp
+  - kit
+  - mail
+  - enchant
+  - gamemode
+  - heal
+  - spawnmob
+  - time
+  - weather
   #- protection
 
 # Backup runs a command while saving is disabled

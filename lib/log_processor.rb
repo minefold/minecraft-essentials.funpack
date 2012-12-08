@@ -29,8 +29,12 @@ class LogProcessor
     when /^(\w+) issued server command: \/(\w+) ([\w+ ]+)$/
       process_setting_changed $1, $2, $3
 
+    when /^java.lang.OutOfMemoryError: GC overhead limit exceeded$/
+      event 'fatal_error', reason: 'out_of_memory'
+      Process.kill :TERM, @pid
+
     when /FAILED TO BIND TO PORT!/
-      event 'fatal_error'
+      event 'fatal_error', reason: 'port_bind_failed'
       Process.kill :TERM, @pid
 
     when /^\[PartyCloud\] connected players:(.*)$/
