@@ -39,7 +39,16 @@ Open3.popen3("java",
       while true
         input = STDIN.readline.strip
 
-        stdin.puts(input == 'list' ? 'partylist' : input)
+        case input
+        when 'list'
+          stdin.puts 'partylist'
+
+        when /^kick (.*)$/
+          stdin.puts "partybounce #{$1}"
+
+        else
+          stdin.puts input
+        end
       end
     end
 
