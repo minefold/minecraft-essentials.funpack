@@ -1,15 +1,27 @@
 # encoding: UTF-8
 
-class LogProcessor
+class Processor
   def initialize(pid)
     @pid = pid
   end
 
-  def process_line(line)
-    line = line.force_encoding('ISO-8859-1').
-      gsub(/\u001b\[(m|\d+;\dm)?/, ''). # strip color sequences out
-      gsub(/[\d:]+\s\[[A-Z]+\]\s/, '').strip  # strip message prefix
+  def event type, options = {}
+    {
+      ts: Time.now.utc.iso8601,
+      event: type,
+      pid: @pid
+    }.merge(options)
+  end
 
+  def terminate!
+    puts JSON.dump event('error', msg: "terminating #{@pid}")
+
+    Process.kill :TERM, @pid
+  end
+end
+
+class NormalLogProcessor < Processor
+  def process_line(line)
     case line
     when /Done \(/
       event 'started'
@@ -29,13 +41,12 @@ class LogProcessor
     when /^(\w+) issued server command: \/(\w+) ([\w+ ]+)$/
       process_setting_changed $1, $2, $3
 
-    when /^java.lang.OutOfMemoryError: GC overhead limit exceeded$/
-      event 'fatal_error', reason: 'out_of_memory'
-      Process.kill :TERM, @pid
-
     when /FAILED TO BIND TO PORT!/
-      event 'fatal_error', reason: 'port_bind_failed'
       Process.kill :TERM, @pid
+      event 'fatal_error', reason: 'port_bind_failed'
+
+    when /^\[SEVERE\]/
+      CrashLogProcessor
 
     when /^\[PartyCloud\] connected players:(.*)$/
       event 'players_list', usernames: $1.split(",")
@@ -43,47 +54,95 @@ class LogProcessor
     else
       event 'info', msg: line.strip
     end
+  end
 
-    def settings_changed actor, key, value
-      event 'settings_changed',
-        actor: actor,
-          key: key,
-          value: value.to_s
+  def settings_changed actor, key, value
+    event 'settings_changed',
+      actor: actor,
+        key: key,
+        value: value.to_s
+  end
+
+  def process_setting_changed actor, method, target
+    case method
+    when 'whitelist'
+      op, target = target.split(' ')
+      settings_changed actor, "whitelist_#{op}", target
+
+    when 'ban'
+      settings_changed actor, 'blacklist_add', target
+
+    when 'pardon'
+      settings_changed actor, 'blacklist_remove', target
+
+    when 'op'
+      settings_changed actor, 'ops_add', target
+
+    when 'deop'
+      settings_changed actor, 'ops_remove', target
+
+    when 'defaultgamemode'
+      settings_changed actor, 'game_mode', target
+
+    when 'difficulty'
+      modes = %w(peaceful easy normal hard)
+      settings_changed actor, 'difficulty', modes.index(target.downcase)
     end
+  end
+end
 
-    def process_setting_changed actor, method, target
-      case method
-      when 'whitelist'
-        op, target = target.split(' ')
-        settings_changed actor, "whitelist_#{op}", target
+class CrashLogProcessor < Processor
+  def initialize(pid)
+    super
 
-      when 'ban'
-        settings_changed actor, 'blacklist_add', target
+    @lines = []
 
-      when 'pardon'
-        settings_changed actor, 'blacklist_remove', target
+    Thread.new do
+      # collect 5 seconds of log messages
+      puts JSON.dump event('error', msg: 'collecting crash log')
+      sleep 5
 
-      when 'op'
-        settings_changed actor, 'ops_add', target
-
-      when 'deop'
-        settings_changed actor, 'ops_remove', target
-
-      when 'defaultgamemode'
-        settings_changed actor, 'game_mode', target
-
-      when 'difficulty'
-        modes = %w(peaceful easy normal hard)
-        settings_changed actor, 'difficulty', modes.index(target.downcase)
+      # analyze
+      reason = @lines.join("\n")
+      if @lines.any?{|line| line =~ /OutOfMemoryError/}
+        reason = 'out_of_memory'
       end
+
+      error = event 'fatal_error', reason: reason
+
+      puts JSON.dump(error)
+
+      terminate!
     end
   end
 
-  def event type, options = {}
-    puts JSON.dump({
-      ts: Time.now.utc.iso8601,
-      event: type,
-      pid: @pid
-    }.merge(options))
+  def process_line(line)
+    @lines << line
+    nil
+  end
+end
+
+class LogProcessor
+  def initialize(pid)
+    @pid = pid
+    @processor = NormalLogProcessor.new(pid)
+  end
+
+  def process_line(line)
+    line = line.force_encoding('ISO-8859-1').
+      gsub(/\u001b\[(m|\d+;\dm)?/, ''). # strip color sequences out
+      gsub(/^[\d:]+\s/, ''). # strip time prefix
+      gsub(/\[INFO\] /, '').strip # strip [INFO]
+
+    result = @processor.process_line(line)
+    if result.is_a?(Class)
+      @processor = result.new(@pid)
+      process_line(line)
+    elsif !result.nil?
+      puts JSON.dump(result)
+    end
+
+  rescue => e
+    puts "exception #{e} #{e.backtrace}"
   end
 end

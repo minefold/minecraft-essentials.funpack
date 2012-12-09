@@ -13,8 +13,8 @@ task :test do
   "funpack": "minecraft-essentials",
   "port": 4032,
   "ram": {
-    "min": 1024,
-    "max": 1024
+    "min": 256,
+    "max": 256
   },
   "settings" : {
     "blacklist": "atnan",
