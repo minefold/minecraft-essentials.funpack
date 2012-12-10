@@ -50,6 +50,8 @@ class NormalLogProcessor < Processor
 
     when /^\[PartyCloud\] connected players:(.*)$/
       event 'players_list', usernames: $1.split(",")
+    when /^connected players:(.*)$/
+      event 'players_list', usernames: $1.split(",")
 
     else
       event 'info', msg: line.strip
