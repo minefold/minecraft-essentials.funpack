@@ -38,14 +38,20 @@ Dir.chdir(root) do
   level_dats = find_level_dats('.')
   level_paths = level_dats.map{|p| File.dirname(p) }.uniq
 
-  nbt = NBTFile.read(File.open(level_dats.first))
+  settings = {}
+  begin
+    nbt = NBTFile.read(File.open(level_dats.first))
+    settings = {
+      seed: nbt[1]['Data']['RandomSeed'].value.to_s
+    }
+  rescue
+    $stderr.puts "failed to parse seed"
+  end
   extras = DEFAULT_PATHS.select{|p| File.exist?(p) }
 
   puts JSON.dump(
     root: root,
     paths: level_paths + extras,
-    settings: {
-      seed: nbt[1]['Data']['RandomSeed'].value.to_s
-    }
+    settings: settings
   )
 end
