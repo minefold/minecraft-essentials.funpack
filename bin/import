@@ -20,7 +20,7 @@ DEFAULT_PATHS = [
 def find_level_dats root
   paths = []
   Find.find(root) do |path|
-    if path =~ /\/level\.dat$/
+    if path =~ /\/(level|uid)\.dat$/
       paths << path
     end
   end
@@ -29,14 +29,14 @@ end
 
 level_dats = find_level_dats('.')
 
-abort JSON.dump(failed: "level.dat not found") unless level_dats.any?
+abort JSON.dump(failed: "(level|uid).dat not found") unless level_dats.any?
 
 # server root will be two dirs up from level dat
 root = File.dirname(File.dirname(level_dats.first))
 
 Dir.chdir(root) do
   level_dats = find_level_dats('.')
-  level_paths = level_dats.map{|p| File.dirname(p) }
+  level_paths = level_dats.map{|p| File.dirname(p) }.uniq
 
   nbt = NBTFile.read(File.open(level_dats.first))
   extras = DEFAULT_PATHS.select{|p| File.exist?(p) }
