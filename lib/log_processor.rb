@@ -14,9 +14,8 @@ class Processor
   end
 
   def terminate!
+    Process.kill :KILL, @pid
     puts JSON.dump event('error', msg: "terminating #{@pid}")
-
-    Process.kill :TERM, @pid
   end
 end
 
@@ -42,8 +41,8 @@ class NormalLogProcessor < Processor
       process_setting_changed $1, $2, $3
 
     when /FAILED TO BIND TO PORT!/
-      Process.kill :TERM, @pid
       event 'fatal_error', reason: 'port_bind_failed'
+      Process.kill :TERM, @pid
 
     when /^\[SEVERE\]/
       CrashLogProcessor
@@ -110,9 +109,7 @@ class CrashLogProcessor < Processor
         reason = 'out_of_memory'
       end
 
-      error = event 'fatal_error', reason: reason
-
-      puts JSON.dump(error)
+      puts JSON.dump(event('fatal_error', reason: reason))
 
       terminate!
     end

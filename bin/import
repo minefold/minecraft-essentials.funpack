@@ -45,7 +45,7 @@ Dir.chdir(root) do
       seed: nbt[1]['Data']['RandomSeed'].value.to_s
     }
   rescue
-    $stderr.puts "failed to parse seed"
+    # $stderr.puts "failed to parse seed"
   end
   extras = DEFAULT_PATHS.select{|p| File.exist?(p) }
 
