@@ -41,10 +41,15 @@ Open3.popen3("java",
 
         case input
         when 'list'
+          stdin.puts 'save-all'
           stdin.puts 'partylist'
 
         when /^kick (.*)$/
           stdin.puts "partybounce #{$1}"
+          
+        when 'stop'
+          stdin.puts 'save-all'
+          stdin.puts 'stop'
 
         else
           stdin.puts input
