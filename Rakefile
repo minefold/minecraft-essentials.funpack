@@ -50,7 +50,7 @@ namespace :update do
     `mkdir -p #{tmp_dir}`
     Dir.chdir(tmp_dir) do
       system %Q{
-        curl -L http://dev.bukkit.org/media/files/645/438/worldguard-5.6.5.zip > wg.zip
+        curl -L http://build.sk89q.com/job/WorldGuard/lastBuild/artifact/target/worldguard-5.6.6-SNAPSHOT.zip > wg.zip
         rm -rf wg
         mkdir -p wg
         cd wg

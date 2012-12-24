@@ -65,7 +65,7 @@ optional:
 
     # Opt out of the optional metrics tooling
     # Available online: http://metrics.griefcraft.com/plugin/LWC/
-    optOut: false
+    optOut: true
 
 # Database information for LWC
 database:
