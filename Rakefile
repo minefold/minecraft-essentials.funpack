@@ -1,10 +1,12 @@
 task :default => :test
 
 task :test do
+  # world_data = "test-world"
+  world_data = "tmp/crash"
   system %Q{
     rm -rf tmp/1234
     mkdir -p tmp/1234/working
-    cp -R test-world/* tmp/1234/working
+    cp -R #{world_data}/* tmp/1234/working
   }
 
   File.write 'tmp/1234/server.json', <<-EOS
@@ -68,7 +70,7 @@ namespace :update do
     `mkdir -p #{tmp_dir}`
     Dir.chdir(tmp_dir) do
       system %Q{
-        curl -L http://dev.bukkit.org/media/files/644/439/worldedit-5.4.5.zip > we.zip
+        curl -L http://build.sk89q.com/job/WorldEdit%20-%201.4.6%20Compatible/lastSuccessfulBuild/artifact/target/worldedit-5.4.6-TEMPFIX2.zip > we.zip
         rm -rf we
         mkdir -p we
         cd we

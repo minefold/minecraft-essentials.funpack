@@ -25,7 +25,7 @@ class NormalLogProcessor < Processor
     when /Done \(/
       event 'started'
 
-    when /^<(\w+)> (.*)$/
+    when /^<([\w;_~]+)> (.*)$/
       event 'chat', username: $1, msg: $2
 
     when 'Stopping server'
@@ -43,6 +43,10 @@ class NormalLogProcessor < Processor
     when /FAILED TO BIND TO PORT!/
       event 'fatal_error', reason: 'port_bind_failed'
       Process.kill :TERM, @pid
+      
+    # ignore this particular error (LWC bug)
+    when /^\[SEVERE\] java.lang.UnsatisfiedLinkError/
+      event 'info', msg: line.strip
 
     when /^\[SEVERE\]/
       CrashLogProcessor
