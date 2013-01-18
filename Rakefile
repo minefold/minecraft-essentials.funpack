@@ -20,12 +20,14 @@ task :test do
   },
   "settings" : {
     "blacklist": "atnan",
-    "game_mode": 1,
-    "new_player_can_build" : false,
+    "gamemode": 2,
     "ops": "whatupdave\\nchrislloyd",
-    "seed": 123456789,
-    "spawn_animals": "1",
-    "spawn_monsters": "1",
+    "seed": "s33d",
+    "allow-nether": true,
+    "allow-flight": false,
+    "spawn-animals": true,
+    "spawn-monsters": false,
+    "spawn-npcs": false,
     "whitelist": "whatupdave\\nchrislloyd"
   }
 }
