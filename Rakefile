@@ -43,7 +43,7 @@ end
 namespace :update do
   desc "Update Bukkit server"
   task :bukkit do
-    system "curl -L http://cbukk.it/craftbukkit-beta.jar > template/craftbukkit.jar"
+    system "curl -L http://ci.md-5.net/job/Spigot/lastStableBuild/artifact/Spigot/target/spigot-1.4.7-R0.2-SNAPSHOT.jar > template/craftbukkit.jar"
   end
 
   task :worldguard do
@@ -54,7 +54,7 @@ namespace :update do
     `mkdir -p #{tmp_dir}`
     Dir.chdir(tmp_dir) do
       system %Q{
-        curl -L http://build.sk89q.com/job/WorldGuard/lastBuild/artifact/target/worldguard-5.6.6-SNAPSHOT.zip > wg.zip
+        curl -L http://dev.bukkit.org/media/files/645/438/worldguard-5.6.5.zip > wg.zip
         rm -rf wg
         mkdir -p wg
         cd wg
@@ -72,7 +72,7 @@ namespace :update do
     `mkdir -p #{tmp_dir}`
     Dir.chdir(tmp_dir) do
       system %Q{
-        curl -L http://build.sk89q.com/job/WorldEdit%20-%201.4.6%20Compatible/lastSuccessfulBuild/artifact/target/worldedit-5.4.6-TEMPFIX2.zip > we.zip
+        curl -L http://dev.bukkit.org/media/files/664/689/worldedit-5.5.zip > we.zip
         rm -rf we
         mkdir -p we
         cd we
