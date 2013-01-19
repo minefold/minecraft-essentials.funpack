@@ -14,8 +14,11 @@ class Processor
   end
 
   def terminate!
-    Process.kill :KILL, @pid
-    puts JSON.dump event('error', msg: "terminating #{@pid}")
+    Thread.new do
+      puts JSON.dump event('error', msg: "terminating #{@pid}")
+      sleep 1
+      Process.kill :KILL, @pid
+    end
   end
 end
 
@@ -41,15 +44,16 @@ class NormalLogProcessor < Processor
       process_setting_changed $1, $2, $3
 
     when /FAILED TO BIND TO PORT!/
+      terminate!
       event 'fatal_error', reason: 'port_bind_failed'
-      Process.kill :TERM, @pid
-      
-    # ignore this particular error (LWC bug)
-    when /^\[SEVERE\] java.lang.UnsatisfiedLinkError/
-      event 'info', msg: line.strip
 
-    when /^\[SEVERE\]/
-      CrashLogProcessor
+    # out of memory
+    when /^\[SEVERE\] java.lang.OutOfMemoryError/
+      terminate!
+      event 'fatal_error', reason: 'out_of_memory'
+    
+    # when /^\[SEVERE\]/
+    #   CrashLogProcessor
 
     when /^\[PartyCloud\] connected players:(.*)$/
       event 'players_list', usernames: $1.split(",")
@@ -103,9 +107,9 @@ class CrashLogProcessor < Processor
     @lines = []
 
     Thread.new do
-      # collect 5 seconds of log messages
+      # collect 15 seconds of log messages
       puts JSON.dump event('error', msg: 'collecting crash log')
-      sleep 5
+      sleep 15
 
       # analyze
       reason = @lines.join("\n")
