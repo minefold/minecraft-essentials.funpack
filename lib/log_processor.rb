@@ -16,7 +16,7 @@ class Processor
   def terminate!
     Thread.new do
       puts JSON.dump event('error', msg: "terminating #{@pid}")
-      sleep 1
+      sleep 5
       Process.kill :KILL, @pid
     end
   end
@@ -52,8 +52,9 @@ class NormalLogProcessor < Processor
       terminate!
       event 'fatal_error', reason: 'out_of_memory'
     
-    # when /^\[SEVERE\]/
-    #   CrashLogProcessor
+    when /^\[SEVERE\] The server has stopped responding!/
+      terminate!
+      event 'fatal_error'
 
     when /^\[PartyCloud\] connected players:(.*)$/
       event 'players_list', usernames: $1.split(",")
@@ -97,35 +98,6 @@ class NormalLogProcessor < Processor
       modes = %w(peaceful easy normal hard)
       settings_changed actor, 'difficulty', modes.index(target.downcase)
     end
-  end
-end
-
-class CrashLogProcessor < Processor
-  def initialize(pid)
-    super
-
-    @lines = []
-
-    Thread.new do
-      # collect 15 seconds of log messages
-      puts JSON.dump event('error', msg: 'collecting crash log')
-      sleep 15
-
-      # analyze
-      reason = @lines.join("\n")
-      if @lines.any?{|line| line =~ /OutOfMemoryError/}
-        reason = 'out_of_memory'
-      end
-
-      puts JSON.dump(event('fatal_error', reason: reason))
-
-      terminate!
-    end
-  end
-
-  def process_line(line)
-    @lines << line
-    nil
   end
 end
 
