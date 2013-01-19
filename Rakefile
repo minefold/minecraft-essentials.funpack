@@ -82,3 +82,10 @@ namespace :update do
     end
   end
 end
+
+task :publish do
+  paths = %w(bin lib template Gemfile Gemfile.lock funpack.json)
+  system %Q{
+    archive-dir http://party-cloud-production.s3.amazonaws.com/funpacks/slugs/minecraft-essentials/stable.tar.lzo #{paths.join(' ')}
+  }
+end
