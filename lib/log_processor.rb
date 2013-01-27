@@ -51,10 +51,14 @@ class NormalLogProcessor < Processor
     when /^\[SEVERE\] java.lang.OutOfMemoryError/
       terminate!
       event 'fatal_error', reason: 'out_of_memory'
-    
+
     when /^\[SEVERE\] The server has stopped responding!/
       terminate!
-      event 'fatal_error'
+      event 'fatal_error', reason: 'The server has stopped responding!'
+
+    when /^\[SEVERE\] The server has crashed!/
+      terminate!
+      event 'fatal_error', reason: 'The server has crashed!'
 
     when /^\[PartyCloud\] connected players:(.*)$/
       event 'players_list', usernames: $1.split(",")
