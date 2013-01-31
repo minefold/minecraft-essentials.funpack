@@ -29,16 +29,16 @@ class NormalLogProcessor < Processor
       event 'started'
 
     when /^<([\w;_~]+)> (.*)$/
-      event 'chat', username: $1, msg: $2
+      event 'chat', nick: $1, msg: $2
 
     when 'Stopping server'
       event 'stopping'
 
     when /^(\w+).*logged in with entity id/
-      event 'player_connected', username: $1
+      event 'player_connected', auth: 'mojang', uid: $1
 
     when /^(\w+) lost connection: (.*)$/
-      event 'player_disconnected', username: $1, reason: $2
+      event 'player_disconnected', auth: 'mojang', uid: $1, reason: $2
 
     when /^(\w+) issued server command: \/(\w+) ([\w+ ]+)$/
       process_setting_changed $1, $2, $3
@@ -61,9 +61,9 @@ class NormalLogProcessor < Processor
       event 'fatal_error', reason: 'The server has crashed!'
 
     when /^\[PartyCloud\] connected players:(.*)$/
-      event 'players_list', usernames: $1.split(",")
+      event 'players_list', auth: 'mojang', uids: $1.split(",")
     when /^connected players:(.*)$/
-      event 'players_list', usernames: $1.split(",")
+      event 'players_list', auth: 'mojang', uids: $1.split(",")
 
     else
       event 'info', msg: line.strip
