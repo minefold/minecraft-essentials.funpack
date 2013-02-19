@@ -9,7 +9,6 @@ class Processor
     {
       ts: Time.now.utc.iso8601,
       event: type,
-      pid: @pid
     }.merge(options)
   end
 

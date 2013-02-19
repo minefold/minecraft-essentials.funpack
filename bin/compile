@@ -9,7 +9,7 @@ cache=$(cd "$2/" && pwd)
 funpack=$(cd $(dirname $0)/.. && pwd)
 
 # spigot
-spigot_build="517"
+spigot_build="485"
 spigot_url="http://ci.md-5.net/job/Spigot/$spigot_build/artifact/Spigot/target/spigot.jar"
 if test -d $cache/spigot-$spigot_build
 then
