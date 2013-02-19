@@ -3,7 +3,6 @@ GEM
   specs:
     brock (0.1.2)
     nbtfile (0.2.0)
-    nokogiri (1.5.6)
 
 PLATFORMS
   ruby
@@ -11,4 +10,3 @@ PLATFORMS
 DEPENDENCIES
   brock
   nbtfile
-  nokogiri
