@@ -24,7 +24,6 @@ end
 
 class NormalLogProcessor < Processor
   def process_line(line)
-    p line
     case line
     when /Done \(/
       event 'started'

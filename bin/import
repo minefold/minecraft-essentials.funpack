@@ -10,8 +10,8 @@ DEFAULT_PATHS = [
   'server.properties',
   'white-list.txt',
   'plugins',
-  'bukkit.yml'
-  'permissions.yml'
+  'bukkit.yml',
+  'permissions.yml',
 ]
 
 root = Minecraft.find_root('.')
