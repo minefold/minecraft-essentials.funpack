@@ -1,55 +1,26 @@
 #!/usr/bin/env ruby
+$:.unshift File.expand_path('../../lib', __FILE__)
 
-# bin/import
-
-require 'find'
 require 'json'
 require 'bundler/setup'
-require 'nbtfile'
+require 'minecraft'
 
 DEFAULT_PATHS = [
   'ops.txt',
   'server.properties',
   'white-list.txt',
   'plugins',
+  'bukkit.yml'
   'permissions.yml'
 ]
 
-def find_level_dats root
-  paths = []
-  Find.find(root) do |path|
-    if path =~ /\/(level|uid)\.dat$/
-      paths << path
-    end
-  end
-  paths
-end
-
-level_dats = find_level_dats('.')
-
-abort JSON.dump(failed: "(level|uid).dat not found") unless level_dats.any?
-
-# server root will be two dirs up from level dat
-root = File.dirname(File.dirname(level_dats.first))
+root = Minecraft.find_root('.')
+abort JSON.dump(failed: "(level|uid).dat not found") unless root
 
 Dir.chdir(root) do
-  level_dats = find_level_dats('.')
-  level_paths = level_dats.map{|p| File.dirname(p) }.uniq
-
-  settings = {}
-  begin
-    nbt = NBTFile.read(File.open(level_dats.first))
-    settings = {
-      seed: nbt[1]['Data']['RandomSeed'].value.to_s
-    }
-  rescue
-    # $stderr.puts "failed to parse seed"
-  end
-  extras = DEFAULT_PATHS.select{|p| File.exist?(p) }
-
   puts JSON.dump(
-    root: root,
-    paths: level_paths + extras,
-    settings: settings
+    root: File.expand_path(root),
+    paths: Minecraft.level_paths('.') + DEFAULT_PATHS.select{|p| File.exist?(p) },
+    settings: Minecraft.read_settings('.')
   )
 end

@@ -2,31 +2,62 @@
 
 # encoding: UTF-8
 
-# usage: run <server-json>
-# runs the server
-
-require 'json'
-require 'time'
-require 'open3'
-
 $:.unshift File.expand_path('../../lib', __FILE__)
 
+require 'bundler/setup'
+
+require 'bash'
+require 'json'
 require 'log_processor'
+require 'minecraft'
+require 'open3'
+require 'settings'
+require 'time'
+
+include Bash
 
 STDOUT.sync = true
 STDIN.sync = true
 
-server_json = ARGV.first
-bin = File.expand_path File.join(__FILE__, '..')
+data_file = File.expand_path(ENV['DATAFILE'])
+$build = File.expand_path('../..', __FILE__)
 
-server_settings = JSON.parse(File.read(server_json))
-system "#{bin}/prepare #{server_json}"
+# setup working directory
+bash <<-EOS
+  mkdir -p plugins
+  cp -f #{$build}/spigot.jar .
+  cp -f #{$build}/worldedit.jar plugins
+  cp -f #{$build}/worldguard.jar plugins
+  cp -f #{$build}/partycloud.jar plugins
+  cp -f #{$build}/bpermissions.jar plugins
+  cp -f #{$build}/essentials/*.jar plugins
+EOS
 
-ram_min, ram_max = server_settings['ram']['min'], server_settings['ram']['max']
+data = JSON.parse(File.read(data_file), symbolize_names: true)
+
+schema = JSON.parse(File.read("#{$build}/funpack.json"))['schema']
+s = Settings.new(schema, data[:settings].merge(
+    "name" => data[:name],
+    "level-name" => (Minecraft.level_path('.') || 'level')
+  )
+)
+{
+  "server.properties.erb" => 'server.properties',
+  "motd.txt.erb" => 'plugins/Essentials/motd.txt',
+}.each do |src, dest|
+  `mkdir -p #{File.dirname(dest)}`
+  File.write(dest, s.erb(File.read("#{$build}/templates/#{src}")))
+end
+
+File.write('ops.txt', Minecraft.player_list(data[:settings][:ops]))
+File.write('white-list.txt', Minecraft.player_list(data[:settings][:whitelist]))
+
+ram_max = (ENV['RAM'] || 1024).to_i
+ram_min = ram_max
 
 Open3.popen3("java",
             "-Xms#{ram_min}M", "-Xmx#{ram_max}M",
-            "-jar", "craftbukkit.jar",
+            "-jar", "spigot.jar",
             "nogui") do |stdin, stdout, stderr, wait_thr|
 
   processor = LogProcessor.new(wait_thr.pid)
@@ -46,7 +77,7 @@ Open3.popen3("java",
 
         when /^kick (.*)$/
           stdin.puts "partybounce #{$1}"
-          
+
         when 'stop'
           stdin.puts 'save-all'
           stdin.puts 'stop'

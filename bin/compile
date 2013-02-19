@@ -1,0 +1,116 @@
+#!/bin/bash
+# usage: bin/compile <build-dir> <cache-dir>
+
+set -eo pipefail
+
+mkdir -p "$1" "$2"
+build=$(cd "$1/" && pwd)
+cache=$(cd "$2/" && pwd)
+funpack=$(cd $(dirname $0)/.. && pwd)
+
+# spigot
+spigot_build="517"
+spigot_url="http://ci.md-5.net/job/Spigot/$spigot_build/artifact/Spigot/target/spigot.jar"
+if test -d $cache/spigot-$spigot_build
+then
+  echo "-----> Using Spigot Build $spigot_build"
+else
+  rm -rf $cache/*
+  mkdir -p $cache/spigot-$spigot_build
+  cd $cache/spigot-$spigot_build
+  echo -n "-----> Installing Spigot Build $spigot_build"
+  curl -L $spigot_url -o spigot.jar
+  echo " done"
+fi
+cp -R $cache/spigot-$spigot_build/spigot.jar $build/spigot.jar
+
+# worldedit
+worldedit_build="1358"
+worldedit_url="http://build.sk89q.com/job/WorldEdit/$worldedit_build/artifact/target/worldedit-5.5.2-SNAPSHOT.zip"
+if test -d $cache/worldedit-$worldedit_build
+then
+  echo "-----> Using WorldEdit Build $worldedit_build"
+else
+  mkdir -p $cache/worldedit-$worldedit_build
+  cd $cache/worldedit-$worldedit_build
+  echo -n "-----> Installing WorldEdit Build $worldedit_build"
+  curl -Lo worldedit-$worldedit_build.zip $worldedit_url
+  unzip worldedit-$worldedit_build.zip
+  echo " done"
+fi
+cp $cache/worldedit-$worldedit_build/worldedit.jar $build/worldedit.jar
+
+# worldguard
+worldguard_build="793"
+worldguard_url="http://build.sk89q.com/job/WorldGuard/$worldguard_build/artifact/target/worldguard-5.7.2-SNAPSHOT.zip"
+if test -d $cache/worldguard-$worldguard_build
+then
+  echo "-----> Using WorldGuard Build $worldguard_build"
+else
+  mkdir -p $cache/worldguard-$worldguard_build
+  cd $cache/worldguard-$worldguard_build
+  echo -n "-----> Installing WorldGuard Build $worldguard_build"
+  curl -Lo worldguard-$worldguard_build.zip $worldguard_url
+  unzip worldguard-$worldguard_build.zip
+  echo " done"
+fi
+cp $cache/worldguard-$worldguard_build/worldguard.jar $build/worldguard.jar
+
+# essentials
+essentials_ver="2.10.1"
+essentials_url="http://dev.bukkit.org/media/files/671/664/Essentials.zip"
+if test -d $cache/essentials-$essentials_ver
+then
+  echo "-----> Using Essentials $essentials_ver"
+else
+  mkdir -p $cache/essentials-$essentials_ver
+  cd $cache/essentials-$essentials_ver
+  echo -n "-----> Installing Essentials $essentials_ver"
+  curl -Lo essentials-$essentials_ver.zip $essentials_url
+  unzip essentials-$essentials_ver.zip
+  echo " done"
+fi
+mkdir -p $build/essentials
+cp $cache/essentials-$essentials_ver/*.jar $build/essentials
+
+# partycloud
+partycloud_build="1"
+partycloud_url="http://funpack-assets.s3.amazonaws.com/Bukkit/partycloud.bukkit-$partycloud_build.tar.gz"
+if test -d $cache/partycloud-$partycloud_build
+then
+  echo "-----> Using Partycloud $partycloud_build"
+else
+  mkdir -p $cache/partycloud-$partycloud_build
+  cd $cache/partycloud-$partycloud_build
+  echo -n "-----> Installing Partycloud $partycloud_build"
+  curl -L $partycloud_url | tar xz
+  echo " done"
+fi
+cp $cache/partycloud-$partycloud_build/partycloud.jar $build
+
+# bPermissions
+bperm_ver="2.10.4"
+bperm_url="http://dev.bukkit.org/media/files/670/147/bpermissions.jar"
+if test -d $cache/bperm-$bperm_ver
+then
+  echo "-----> Using bPermissions $bperm_ver"
+else
+  mkdir -p $cache/bperm-$bperm_ver
+  cd $cache/bperm-$bperm_ver
+  echo -n "-----> Installing bPermissions $bperm_ver"
+  curl -L $bperm_url -o bpermissions.jar
+  echo " done"
+fi
+cp $cache/bperm-$bperm_ver/bpermissions.jar $build
+
+cd $funpack
+mkdir -p $build/bin
+cp bin/run $build/bin
+cp bin/import $build/bin
+
+cp -R lib $build
+cp -R templates $build
+cp Procfile $build
+cp Gemfile $build
+cp Gemfile.lock $build
+cp funpack.json $build

@@ -24,12 +24,13 @@ end
 
 class NormalLogProcessor < Processor
   def process_line(line)
+    p line
     case line
     when /Done \(/
       event 'started'
 
-    when /^<([\w;_~]+)> (.*)$/
-      event 'chat', nick: $1, msg: $2
+    when /^(\d+;\d+m)?<([\w;_~]+)> (.*)$/
+      event 'chat', nick: $2, msg: $3
 
     when 'Stopping server'
       event 'stopping'
@@ -70,37 +71,31 @@ class NormalLogProcessor < Processor
     end
   end
 
-  def settings_changed actor, key, value
-    event 'settings_changed',
-      actor: actor,
-        key: key,
-        value: value.to_s
-  end
+  def process_setting_changed(actor, action, target)
+    setting = {
+      'op'     => { add: 'ops' },
+      'deop'   => { remove: 'ops' },
+      'ban'    => { add: 'blacklist' },
+      'pardon' => { remove: 'blacklist' },
+      'defaultgamemode' => { set: 'game_mode' },
+    }[action]
+    value = target
 
-  def process_setting_changed actor, method, target
-    case method
-    when 'whitelist'
-      op, target = target.split(' ')
-      settings_changed actor, "whitelist_#{op}", target
+    if !setting
+      setting = case action
+      when 'whitelist'
+        op, value = target.split(' ')
+        { "#{op}" => 'whitelist' }
 
-    when 'ban'
-      settings_changed actor, 'blacklist_add', target
+      when 'difficulty'
+        field = @schema.fields.find{|f| f.name == :difficulty }
+        value = field.values.find{|v| v['label'].downcase == target.downcase }
+        { set: 'difficulty' }
+      end
+    end
 
-    when 'pardon'
-      settings_changed actor, 'blacklist_remove', target
-
-    when 'op'
-      settings_changed actor, 'ops_add', target
-
-    when 'deop'
-      settings_changed actor, 'ops_remove', target
-
-    when 'defaultgamemode'
-      settings_changed actor, 'game_mode', target
-
-    when 'difficulty'
-      modes = %w(peaceful easy normal hard)
-      settings_changed actor, 'difficulty', modes.index(target.downcase)
+    if setting
+      event 'settings_changed', setting.merge(value: value)
     end
   end
 end
