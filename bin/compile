@@ -88,21 +88,6 @@ else
 fi
 cp $cache/partycloud-$partycloud_build/partycloud.jar $build
 
-# bPermissions
-bperm_ver="2.10.4"
-bperm_url="http://dev.bukkit.org/media/files/670/147/bpermissions.jar"
-if test -d $cache/bperm-$bperm_ver
-then
-  echo "-----> Using bPermissions $bperm_ver"
-else
-  mkdir -p $cache/bperm-$bperm_ver
-  cd $cache/bperm-$bperm_ver
-  echo -n "-----> Installing bPermissions $bperm_ver"
-  curl -L $bperm_url -o bpermissions.jar
-  echo " done"
-fi
-cp $cache/bperm-$bperm_ver/bpermissions.jar $build
-
 cd $funpack
 mkdir -p $build/bin
 cp bin/run $build/bin
