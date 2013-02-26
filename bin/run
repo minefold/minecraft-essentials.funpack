@@ -30,7 +30,7 @@ bash <<-EOS
   cp -f #{$build}/worldguard.jar plugins
   cp -f #{$build}/partycloud.jar plugins
   cp -f #{$build}/essentials/*.jar plugins
-  
+
   rm -f plugins/bpermissions.jar
 EOS
 
@@ -83,10 +83,18 @@ Open3.popen3("java",
           stdin.puts 'save-all'
           stdin.puts 'stop'
 
+        when 'stats'
+          stdin.puts 'lag'
+
         else
           stdin.puts input
         end
       end
+    end
+
+    Thread.new do
+      sleep 60
+      stdin.puts 'lag'
     end
 
     while true

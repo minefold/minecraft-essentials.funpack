@@ -1,28 +1,30 @@
 # encoding: UTF-8
 
-class Processor
+class LogProcessor
   def initialize(pid)
     @pid = pid
+    @mode = :normal
   end
 
-  def event type, options = {}
-    {
-      ts: Time.now.utc.iso8601,
-      event: type,
-    }.merge(options)
-  end
-
-  def terminate!
-    Thread.new do
-      puts JSON.dump event('error', msg: "terminating #{@pid}")
-      sleep 5
-      Process.kill :KILL, @pid
-    end
-  end
-end
-
-class NormalLogProcessor < Processor
   def process_line(line)
+    line = line.force_encoding('ISO-8859-1').
+      gsub(/\u001b\[(m|\d+;\dm)?/, ''). # strip color sequences out
+      gsub(/^[\d:]+\s/, ''). # strip time prefix
+      gsub(/\[INFO\] /, '').strip # strip [INFO]
+
+    result = case @mode
+    when :normal
+      process_normal_line(line)
+    when :stats
+      process_stats_line(line)
+    end
+
+  rescue => e
+    puts "exception #{e} #{e.backtrace}"
+  end
+
+  def process_normal_line(color)
+    line = color.gsub('33;22m', '')
     case line
     when /Done \(/
       event 'started'
@@ -64,8 +66,48 @@ class NormalLogProcessor < Processor
     when /^connected players:(.*)$/
       event 'players_list', auth: 'mojang', uids: $1.split(",")
 
+    when /Uptime: (\d+)/
+      process_stats_line(line)
+
+    when /^[\w ]+ "\w+": [\d,]+ chunks, [\d,]+ entities\.$/
+      # ignore chunk stats lines
+
     else
       event 'info', msg: line.strip
+    end
+  end
+
+  # Uptime: 4 minutes 22 seconds
+  # Current TPS = 20.0
+  # Maximum memory: 633 MB.
+  # Allocated memory: 633 MB.
+  # Free memory: 398 MB.
+  # World "level": 256 chunks, 315 entities.
+  # Nether "level_nether": 0 chunks, 0 entities.
+  # The End "level_the_end": 0 chunks, 0 entities.
+
+  def process_stats_line(line)
+    line.gsub!('33;22m', '')
+
+    @stats ||= {}
+    @mode = :stats
+
+    case line
+    when /^Uptime: (.*)/
+      @stats['uptime'] = human_time_in_minutes($1)
+    when /^Current TPS = (.*)/
+      @stats['tps'] = $1.to_f
+    when /^Maximum memory: (.*) MB/
+      @stats['ram_max'] = $1.to_i
+    when /^Allocated memory: (.*) MB/
+      @stats['ram_alloc'] = $1.to_i
+    when /^Free memory: (.*) MB/
+      @stats['ram_free'] = $1.to_i
+    else
+      @mode = :normal
+      event 'stats', @stats
+
+      process_normal_line(line)
     end
   end
 
@@ -96,29 +138,33 @@ class NormalLogProcessor < Processor
       event 'settings_changed', setting.merge(value: value)
     end
   end
-end
 
-class LogProcessor
-  def initialize(pid)
-    @pid = pid
-    @processor = NormalLogProcessor.new(pid)
+  def time_part(time, part)
+    if match = time.match(/(\d+) #{part}/)
+      match[1].to_i
+    end
   end
 
-  def process_line(line)
-    line = line.force_encoding('ISO-8859-1').
-      gsub(/\u001b\[(m|\d+;\dm)?/, ''). # strip color sequences out
-      gsub(/^[\d:]+\s/, ''). # strip time prefix
-      gsub(/\[INFO\] /, '').strip # strip [INFO]
+  # 17 hours 68 minutes 74 seconds
+  def human_time_in_minutes(human)
+    hours = time_part(human, 'hours') || 0
+    mins = time_part(human, 'minutes') || 0
 
-    result = @processor.process_line(line)
-    if result.is_a?(Class)
-      @processor = result.new(@pid)
-      process_line(line)
-    elsif !result.nil?
-      puts JSON.dump(result)
+    mins + (hours * 60)
+  end
+
+  def event(type, options = {})
+    puts JSON.dump({
+      ts: Time.now.utc.iso8601,
+      event: type,
+    }.merge(options))
+  end
+
+  def terminate!
+    Thread.new do
+      puts JSON.dump event('error', msg: "terminating #{@pid}")
+      sleep 5
+      Process.kill :KILL, @pid
     end
-
-  rescue => e
-    puts "exception #{e} #{e.backtrace}"
   end
 end
