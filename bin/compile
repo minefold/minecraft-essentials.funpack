@@ -38,7 +38,7 @@ else
   unzip worldedit-$worldedit_build.zip
   echo " done"
 fi
-cp $cache/worldedit-$worldedit_build/worldedit.jar $build/worldedit.jar
+cp $cache/worldedit-$worldedit_build/WorldEdit.jar $build/worldedit.jar
 
 # worldguard
 worldguard_build="793"
@@ -54,7 +54,7 @@ else
   unzip worldguard-$worldguard_build.zip
   echo " done"
 fi
-cp $cache/worldguard-$worldguard_build/worldguard.jar $build/worldguard.jar
+cp $cache/worldguard-$worldguard_build/WorldGuard.jar $build/worldguard.jar
 
 # essentials
 essentials_ver="2.10.1"
