@@ -37,7 +37,7 @@ module Minecraft
   end
 
   def self.level_path(root)
-    level_paths(root).max
+    level_paths(root).min
   end
 
   def self.player_list(player_setting)
