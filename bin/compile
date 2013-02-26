@@ -19,7 +19,7 @@ else
   mkdir -p $cache/spigot-$spigot_build
   cd $cache/spigot-$spigot_build
   echo -n "-----> Installing Spigot Build $spigot_build"
-  curl -L $spigot_url -o spigot.jar
+  curl --silent -L $spigot_url -o spigot.jar
   echo " done"
 fi
 cp -R $cache/spigot-$spigot_build/spigot.jar $build/spigot.jar
@@ -34,7 +34,7 @@ else
   mkdir -p $cache/worldedit-$worldedit_build
   cd $cache/worldedit-$worldedit_build
   echo -n "-----> Installing WorldEdit Build $worldedit_build"
-  curl -Lo worldedit-$worldedit_build.zip $worldedit_url
+  curl --silent -Lo worldedit-$worldedit_build.zip $worldedit_url
   unzip worldedit-$worldedit_build.zip
   echo " done"
 fi
@@ -50,7 +50,7 @@ else
   mkdir -p $cache/worldguard-$worldguard_build
   cd $cache/worldguard-$worldguard_build
   echo -n "-----> Installing WorldGuard Build $worldguard_build"
-  curl -Lo worldguard-$worldguard_build.zip $worldguard_url
+  curl --silent -Lo worldguard-$worldguard_build.zip $worldguard_url
   unzip worldguard-$worldguard_build.zip
   echo " done"
 fi
@@ -66,12 +66,28 @@ else
   mkdir -p $cache/essentials-$essentials_ver
   cd $cache/essentials-$essentials_ver
   echo -n "-----> Installing Essentials $essentials_ver"
-  curl -Lo essentials-$essentials_ver.zip $essentials_url
+  curl --silent -Lo essentials-$essentials_ver.zip $essentials_url
   unzip essentials-$essentials_ver.zip
   echo " done"
 fi
 mkdir -p $build/essentials
 cp $cache/essentials-$essentials_ver/*.jar $build/essentials
+
+# lwc
+lwc_ver="4.3.1"
+lwc_url="http://dev.bukkit.org/media/files/647/269/LWC.jar"
+if test -d $cache/lwc-$lwc_ver
+then
+  echo "-----> Using lwc $lwc_ver"
+else
+  mkdir -p $cache/lwc-$lwc_ver
+  cd $cache/lwc-$lwc_ver
+  echo -n "-----> Installing lwc $lwc_ver"
+  curl --silent -Lo lwc.jar $lwc_url
+  echo " done"
+fi
+mkdir -p $build/lwc
+cp $cache/lwc-$lwc_ver/lwc.jar $build
 
 # partycloud
 partycloud_build="1"
@@ -83,7 +99,7 @@ else
   mkdir -p $cache/partycloud-$partycloud_build
   cd $cache/partycloud-$partycloud_build
   echo -n "-----> Installing Partycloud $partycloud_build"
-  curl -L $partycloud_url | tar xz
+  curl --silent -L $partycloud_url | tar xz
   echo " done"
 fi
 cp $cache/partycloud-$partycloud_build/partycloud.jar $build

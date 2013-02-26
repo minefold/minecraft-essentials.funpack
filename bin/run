@@ -29,6 +29,7 @@ bash <<-EOS
   cp -f #{$build}/worldedit.jar plugins
   cp -f #{$build}/worldguard.jar plugins
   cp -f #{$build}/partycloud.jar plugins
+  cp -f #{$build}/lwc.jar plugins
   cp -f #{$build}/essentials/*.jar plugins
 
   rm -f plugins/bpermissions.jar
