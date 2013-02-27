@@ -44,5 +44,5 @@ task :compile do
 end
 
 task :import do
-  fail unless system "cd #{$working_dir} && #{$build_dir}/bin/import"
+  fail unless system "cd #{$working_dir}/.. && #{$build_dir}/bin/import"
 end
