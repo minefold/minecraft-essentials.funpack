@@ -1,9 +1,10 @@
 # encoding: UTF-8
 
 class LogProcessor
-  def initialize(pid)
+  def initialize(pid, schema)
     @pid = pid
     @mode = :normal
+    @schema = schema
   end
 
   def process_line(line)

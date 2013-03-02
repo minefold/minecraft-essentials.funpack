@@ -73,7 +73,7 @@ Open3.popen3("java",
             "-jar", "spigot.jar",
             "nogui") do |stdin, stdout, stderr, wait_thr|
 
-  processor = LogProcessor.new(wait_thr.pid)
+  processor = LogProcessor.new(wait_thr.pid, s.schema)
 
   begin
     # read stdin. On list command we call partylist
