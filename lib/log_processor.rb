@@ -57,6 +57,10 @@ class LogProcessor
       terminate!
       event 'fatal_error', reason: 'The server has stopped responding!'
 
+    when /^\[SEVERE\] This crash report has been saved to/
+      terminate!
+      event 'fatal_error', reason: 'The server has stopped responding!'
+
     when /^\[SEVERE\] The server has crashed!/
       terminate!
       event 'fatal_error', reason: 'The server has crashed!'
