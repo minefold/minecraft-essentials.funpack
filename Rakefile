@@ -2,11 +2,10 @@ task :default => :start
 
 $build_dir = File.expand_path("~/funpacks/bukkit-essentials/build")
 $cache_dir = File.expand_path("~/funpacks/bukkit-essentials/cache")
-$working_dir = File.expand_path("~/funpacks/bukkit-essentials/working")
+$working_dir = File.expand_path(ENV['WORKING'] || "~/funpacks/bukkit-essentials/working")
 
 task :start do
   system %Q{
-    rm -rf #{$working_dir}
     mkdir -p #{$working_dir}
   }
 

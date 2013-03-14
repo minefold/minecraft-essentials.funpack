@@ -9,9 +9,8 @@ require 'bundler/setup'
 require 'bash'
 require 'json'
 require 'log_processor'
-require 'craftbelt/minecraft_instance'
+require 'craftbelt'
 require 'open3'
-require 'settings'
 require 'time'
 
 include Bash
@@ -35,45 +34,19 @@ bash <<-EOS
   rm -f plugins/bpermissions.jar
 EOS
 
-data = JSON.parse(File.read(data_file), symbolize_names: true)
-minecraft = Craftbelt::MinecraftInstance.new('.')
-
-schema = JSON.parse(File.read("#{$build}/funpack.json"))['schema']
-s = Settings.new(schema, data[:settings].merge(
-    "name" => data[:name],
-    "level-name" => (minecraft.level_paths.first || 'level')
-  )
+env = Craftbelt::Env.new('.', $build)
+env.write_player_files
+env.write_templates(
+  'server.properties.erb' => 'server.properties',
+  "motd.txt.erb" => 'plugins/Essentials/motd.txt'
 )
-{
-  "server.properties.erb" => 'server.properties',
-  "motd.txt.erb" => 'plugins/Essentials/motd.txt',
-}.each do |src, dest|
-  `mkdir -p #{File.dirname(dest)}`
-  File.write(dest, s.erb(File.read("#{$build}/templates/#{src}")))
-end
-
-def player_list(player_setting)
-  # TODO remove this if when players are passed as an array
-  if player_setting.is_a? Array
-    player_setting.join("\n")
-  else
-    player_setting
-  end
-end
-
-
-File.write('ops.txt', player_list(data[:settings][:ops]))
-File.write('white-list.txt', player_list(data[:settings][:whitelist]))
-
-ram_max = (ENV['RAM'] || 1024).to_i
-ram_min = ram_max
 
 Open3.popen3("java",
-            "-Xms#{ram_min}M", "-Xmx#{ram_max}M",
+            "-Xms#{env.ram}M", "-Xmx#{env.ram}M",
             "-jar", "spigot.jar",
             "nogui") do |stdin, stdout, stderr, wait_thr|
 
-  processor = LogProcessor.new(wait_thr.pid, s.schema)
+  processor = LogProcessor.new(wait_thr.pid, env.schema)
 
   begin
     # read stdin. On list command we call partylist

@@ -148,16 +148,16 @@
       "label": "Spawn NPCs",
       "default": true
     },
-
-    {
-      "name": "whitelist",
-      "type": "text"
-    },
-
+    
     {
       "name": "ops",
       "type": "text"
+    },   {
+      "name": "whitelist",
+      "type": "text"
+    },  {
+      "name": "blacklist",
+      "type": "text"
     }
-
   ]
 }
