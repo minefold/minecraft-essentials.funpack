@@ -83,7 +83,17 @@ Open3.popen3("java",
     end
 
     while true
-      processor.process_line stderr.readline
+      line = stderr.readline
+      begin
+        processor.process_line line
+      rescue => e
+        puts JSON.dump(
+          ts: Time.now.utc.iso8601,
+          event: "failed to process line",
+          error: e,
+          line: line
+        )
+      end
     end
   rescue EOFError
   end
