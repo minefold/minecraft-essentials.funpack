@@ -1,6 +1,18 @@
 {
-  "schema": [
-    {
+  "schema": [{
+    "name": "server_version",
+    "label": "Server Version",
+    "default": "1.4.7",
+    "values": [{
+      "value": "1.5.1",
+      "label": "1.5.1 (unstable build, may crash!)"
+    }, {
+      "value": "1.5.1",
+      "label": "1.4.7 (recommended)"
+    }]
+  },
+  
+  {
       "name": "gamemode",
       "label": "Game Mode",
       "default": "0",

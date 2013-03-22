@@ -9,7 +9,7 @@ class LogProcessor
 
   def process_line(line)
     line = line.force_encoding('ISO-8859-1').
-      gsub(/\u001b\[(m|\d+;\dm)?/, ''). # strip color sequences out
+      gsub(/\u001b\[([\d;]+)?m/, ''). # strip color sequences out
       gsub(/^[\d:]+\s/, ''). # strip time prefix
       gsub(/\[INFO\] /, '').strip # strip [INFO]
 
@@ -25,7 +25,8 @@ class LogProcessor
   end
 
   def process_normal_line(color)
-    line = color.gsub('33;22m', '')
+    line = color#.gsub(/;3\d;\d+m/, '')
+
     case line
     when /Done \(/
       event 'started'
@@ -92,8 +93,6 @@ class LogProcessor
   # The End "level_the_end": 0 chunks, 0 entities.
 
   def process_stats_line(line)
-    line.gsub!('33;22m', '')
-
     @stats ||= {}
     @mode = :stats
 

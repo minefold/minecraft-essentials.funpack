@@ -9,20 +9,35 @@ cache=$(cd "$2/" && pwd)
 funpack=$(cd $(dirname $0)/.. && pwd)
 
 # spigot
-spigot_build="485"
-spigot_url="http://ci.md-5.net/job/Spigot/$spigot_build/artifact/Spigot/target/spigot.jar"
-if test -d $cache/spigot-$spigot_build
+ver="617"
+url="http://ci.md-5.net/job/Spigot/$ver/artifact/Spigot-Server/target/spigot.jar"
+if test -d $cache/spigot-$ver
 then
-  echo "-----> Using Spigot Build $spigot_build"
+  echo "-----> Using Spigot Build $ver"
 else
   rm -rf $cache/*
-  mkdir -p $cache/spigot-$spigot_build
-  cd $cache/spigot-$spigot_build
-  echo -n "-----> Installing Spigot Build $spigot_build"
-  curl --silent -L $spigot_url -o spigot.jar
+  mkdir -p $cache/spigot-$ver
+  cd $cache/spigot-$ver
+  echo -n "-----> Installing Spigot Build $ver"
+  curl --silent -L $url -o spigot.jar
   echo " done"
 fi
-cp -R $cache/spigot-$spigot_build/spigot.jar $build/spigot.jar
+cp -R $cache/spigot-$ver/spigot.jar $build/spigot.jar
+
+# craftbukkit 1.5.1
+ver="01997_1.5.1-R0.1"
+url="http://dl.bukkit.org/downloads/craftbukkit/get/$ver/craftbukkit-dev.jar"
+if test -d $cache/bukkit-$ver
+then
+  echo "-----> Using Craftbukkit Build $ver"
+else
+  mkdir -p $cache/bukkit-$ver
+  cd $cache/bukkit-$ver
+  echo -n "-----> Installing Craftbukkit Build $ver"
+  curl --silent -L $url -o craftbukkit.jar
+  echo " done"
+fi
+cp -R $cache/bukkit-$ver/craftbukkit.jar $build/craftbukkit.jar
 
 # worldedit
 worldedit_build="1358"

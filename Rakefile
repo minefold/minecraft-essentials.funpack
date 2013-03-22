@@ -13,6 +13,7 @@ task :start do
     {
       "name": "Woodbury",
       "settings": {
+        "server_version": "1.5.1",
         "blacklist": "atnan",
         "gamemode": 2,
         "ops": "whatupdave\\nchrislloyd",

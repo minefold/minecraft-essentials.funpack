@@ -21,10 +21,20 @@ STDIN.sync = true
 data_file = File.expand_path(ENV['DATAFILE'])
 $build = File.expand_path('../..', __FILE__)
 
+env = Craftbelt::Env.new('.', $build)
+
+jar = env.field('server_version') == '1.5.1' ? 'craftbukkit.jar' : 'spigot.jar'
+
+puts JSON.dump(
+  ts: Time.now.utc.iso8601,
+  event: "info",
+  msg: "starting version #{env.field('server_version')} #{jar}"
+)
+
 # setup working directory
 bash <<-EOS
   mkdir -p plugins
-  cp -f #{$build}/spigot.jar .
+  cp -f #{$build}/#{jar} .
   cp -f #{$build}/worldedit.jar plugins
   cp -f #{$build}/worldguard.jar plugins
   cp -f #{$build}/partycloud.jar plugins
@@ -34,7 +44,6 @@ bash <<-EOS
   rm -f plugins/bpermissions.jar
 EOS
 
-env = Craftbelt::Env.new('.', $build)
 env.write_player_files
 env.write_templates(
   'server.properties.erb' => 'server.properties',
@@ -43,7 +52,7 @@ env.write_templates(
 
 Open3.popen3("java",
             "-Xms#{env.ram}M", "-Xmx#{env.ram}M",
-            "-jar", "spigot.jar",
+            "-jar", jar,
             "nogui") do |stdin, stdout, stderr, wait_thr|
 
   processor = LogProcessor.new(wait_thr.pid, env.schema)
