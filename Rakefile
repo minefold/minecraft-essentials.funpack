@@ -12,18 +12,16 @@ task :start do
   File.write "#{$working_dir}/data.json", <<-EOS
     {
       "name": "Woodbury",
+      "access": { "blacklist": [] },
       "settings": {
         "server_version": "1.5.1",
-        "blacklist": "atnan",
         "gamemode": 2,
-        "ops": "whatupdave\\nchrislloyd",
         "seed": "s33d",
         "allow-nether": true,
         "allow-flight": false,
         "spawn-animals": true,
         "spawn-monsters": false,
-        "spawn-npcs": false,
-        "whitelist": "whatupdave\\nchrislloyd"
+        "spawn-npcs": false
       }
     }
   EOS
