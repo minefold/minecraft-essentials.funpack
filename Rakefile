@@ -12,7 +12,7 @@ task :start do
   File.write "#{$working_dir}/data.json", <<-EOS
     {
       "name": "Woodbury",
-      "access": { "blacklist": [] },
+      "access": { "whitelist": [] },
       "settings": {
         "server_version": "1.5.1",
         "gamemode": 2,
