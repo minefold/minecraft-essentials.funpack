@@ -14,6 +14,7 @@ task :start do
       "name": "Woodbury",
       "access": { "whitelist": [] },
       "settings": {
+        "max-players": "22",
         "server_version": "1.5.1",
         "gamemode": 2,
         "seed": "s33d",
