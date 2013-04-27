@@ -132,9 +132,12 @@ class LogProcessor
         { "#{op}" => 'whitelist' }
 
       when 'difficulty'
-        field = @schema.fields.find{|f| f.name == :difficulty }
-        value = field.values.find{|v| v['label'].downcase == target.downcase }
-        { set: 'difficulty' }
+        if field = @schema.find{|f| f['name'] == 'difficulty' }
+          if option = field['values'].find{|o| o['label'].downcase == target.downcase }
+            value = option['value']
+            { set: 'difficulty' }
+          end
+        end
       end
     end
 

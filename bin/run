@@ -23,13 +23,7 @@ $build = File.expand_path('../..', __FILE__)
 
 env = Craftbelt::Env.new('.', $build)
 
-jar = env.field('server_version') == '1.5.1' ? 'craftbukkit.jar' : 'spigot.jar'
-
-puts JSON.dump(
-  ts: Time.now.utc.iso8601,
-  event: "info",
-  msg: "starting version #{env.field('server_version')} #{jar}"
-)
+jar = 'spigot.jar'
 
 # setup working directory
 bash <<-EOS

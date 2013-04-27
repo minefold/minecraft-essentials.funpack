@@ -12,10 +12,10 @@ task :start do
   File.write "#{$working_dir}/data.json", <<-EOS
     {
       "name": "Woodbury",
-      "access": { "whitelist": [] },
+      "access": { "blacklist": [] },
       "settings": {
+        "ops": ["whatupdave"],
         "max-players": "22",
-        "server_version": "1.5.1",
         "gamemode": 2,
         "seed": "s33d",
         "allow-nether": true,
