@@ -35,7 +35,7 @@ bash <<-EOS
   cp -f #{$build}/lwc.jar plugins
   cp -f #{$build}/essentials/*.jar plugins
 
-  rm -f plugins/bpermissions.jar
+  rm -rf plugins/bPermissions*
 EOS
 
 env.write_player_files
