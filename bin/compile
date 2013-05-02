@@ -9,7 +9,7 @@ cache=$(cd "$2/" && pwd)
 funpack=$(cd $(dirname $0)/.. && pwd)
 
 # spigot
-ver="827"
+ver="834"
 url="http://ci.md-5.net/job/Spigot/$ver/artifact/Spigot-Server/target/spigot.jar"
 if test -d $cache/spigot-$ver
 then
@@ -25,8 +25,8 @@ fi
 cp -R $cache/spigot-$ver/spigot.jar $build/spigot.jar
 
 # worldedit
-worldedit_build="1358"
-worldedit_url="http://build.sk89q.com/job/WorldEdit/$worldedit_build/artifact/target/worldedit-5.5.2-SNAPSHOT.zip"
+worldedit_build="1406"
+worldedit_url="http://build.sk89q.com/job/WorldEdit/$worldedit_build/artifact/target/worldedit-5.5.6-SNAPSHOT.zip"
 if test -d $cache/worldedit-$worldedit_build
 then
   echo "-----> Using WorldEdit Build $worldedit_build"
@@ -41,8 +41,8 @@ fi
 cp $cache/worldedit-$worldedit_build/WorldEdit.jar $build/worldedit.jar
 
 # worldguard
-worldguard_build="793"
-worldguard_url="http://build.sk89q.com/job/WorldGuard/$worldguard_build/artifact/target/worldguard-5.7.2-SNAPSHOT.zip"
+worldguard_build="841"
+worldguard_url="http://build.sk89q.com/job/WorldGuard/$worldguard_build/artifact/target/worldguard-5.7.4-SNAPSHOT.zip"
 if test -d $cache/worldguard-$worldguard_build
 then
   echo "-----> Using WorldGuard Build $worldguard_build"
