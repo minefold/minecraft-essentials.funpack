@@ -12,6 +12,7 @@ require 'log_processor'
 require 'craftbelt'
 require 'open3'
 require 'time'
+require 'yaml'
 
 include Bash
 
@@ -41,7 +42,8 @@ EOS
 env.write_player_files
 env.write_templates(
   'server.properties.erb' => 'server.properties',
-  "motd.txt.erb" => 'plugins/Essentials/motd.txt'
+  'motd.txt.erb' => 'plugins/Essentials/motd.txt',
+  'essentials-config.yml.erb' => 'plugins/Essentials/config.yml'
 )
 
 Open3.popen3("java",
