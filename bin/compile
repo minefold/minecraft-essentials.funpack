@@ -8,8 +8,8 @@ build=$(cd "$1/" && pwd)
 cache=$(cd "$2/" && pwd)
 funpack=$(cd $(dirname $0)/.. && pwd)
 
-# spigot
-ver="834"
+# spigot (http://ci.md-5.net/job/Spigot/)
+ver="1031"
 url="http://ci.md-5.net/job/Spigot/$ver/artifact/Spigot-Server/target/spigot.jar"
 if test -d $cache/spigot-$ver
 then
@@ -24,25 +24,25 @@ else
 fi
 cp -R $cache/spigot-$ver/spigot.jar $build/spigot.jar
 
-# worldedit
-worldedit_build="1406"
-worldedit_url="http://build.sk89q.com/job/WorldEdit/$worldedit_build/artifact/target/worldedit-5.5.6-SNAPSHOT.zip"
-if test -d $cache/worldedit-$worldedit_build
+# worldedit (http://build.sk89q.com/job/WorldEdit/)
+ver="1433"
+url="http://build.sk89q.com/job/WorldEdit/$ver/artifact/target/worldedit-5.5.8-SNAPSHOT.zip"
+if test -d $cache/worldedit-$ver
 then
-  echo "-----> Using WorldEdit Build $worldedit_build"
+  echo "-----> Using WorldEdit Build $ver"
 else
-  mkdir -p $cache/worldedit-$worldedit_build
-  cd $cache/worldedit-$worldedit_build
-  echo -n "-----> Installing WorldEdit Build $worldedit_build"
-  curl --silent -Lo worldedit-$worldedit_build.zip $worldedit_url
-  unzip worldedit-$worldedit_build.zip
+  mkdir -p $cache/worldedit-$ver
+  cd $cache/worldedit-$ver
+  echo -n "-----> Installing WorldEdit Build $ver"
+  curl --silent -Lo worldedit-$ver.zip $url
+  unzip worldedit-$ver.zip
   echo " done"
 fi
-cp $cache/worldedit-$worldedit_build/WorldEdit.jar $build/worldedit.jar
+cp $cache/worldedit-$ver/WorldEdit.jar $build/worldedit.jar
 
-# worldguard
-worldguard_build="841"
-worldguard_url="http://build.sk89q.com/job/WorldGuard/$worldguard_build/artifact/target/worldguard-5.7.4-SNAPSHOT.zip"
+# worldguard (http://build.sk89q.com/job/Worldguard/)
+worldguard_build="897"
+worldguard_url="http://build.sk89q.com/job/WorldGuard/$worldguard_build/artifact/target/worldguard-5.8-SNAPSHOT.zip"
 if test -d $cache/worldguard-$worldguard_build
 then
   echo "-----> Using WorldGuard Build $worldguard_build"
@@ -56,53 +56,53 @@ else
 fi
 cp $cache/worldguard-$worldguard_build/WorldGuard.jar $build/worldguard.jar
 
-# essentials
-essentials_ver="2.10.1"
-essentials_url="http://dev.bukkit.org/media/files/671/664/Essentials.zip"
-if test -d $cache/essentials-$essentials_ver
+# essentials (http://dev.bukkit.org/bukkit-plugins/essentials/)
+ver="2.11.1"
+url="http://dev.bukkit.org/media/files/711/777/Essentials.zip"
+if test -d $cache/essentials-$ver
 then
-  echo "-----> Using Essentials $essentials_ver"
+  echo "-----> Using Essentials $ver"
 else
-  mkdir -p $cache/essentials-$essentials_ver
-  cd $cache/essentials-$essentials_ver
-  echo -n "-----> Installing Essentials $essentials_ver"
-  curl --silent -Lo essentials-$essentials_ver.zip $essentials_url
-  unzip essentials-$essentials_ver.zip
+  mkdir -p $cache/essentials-$ver
+  cd $cache/essentials-$ver
+  echo -n "-----> Installing Essentials $ver"
+  curl --silent -Lo essentials-$ver.zip $url
+  unzip essentials-$ver.zip
   echo " done"
 fi
 mkdir -p $build/essentials
-cp $cache/essentials-$essentials_ver/*.jar $build/essentials
+cp $cache/essentials-$ver/*.jar $build/essentials
 
-# lwc
-lwc_ver="4.3.1"
-lwc_url="http://dev.bukkit.org/media/files/647/269/LWC.jar"
-if test -d $cache/lwc-$lwc_ver
+# lwc (http://dev.bukkit.org/bukkit-plugins/lwc/)
+ver="4.3.1"
+url="http://dev.bukkit.org/media/files/647/269/LWC.jar"
+if test -d $cache/lwc-$ver
 then
-  echo "-----> Using lwc $lwc_ver"
+  echo "-----> Using lwc $ver"
 else
-  mkdir -p $cache/lwc-$lwc_ver
-  cd $cache/lwc-$lwc_ver
-  echo -n "-----> Installing lwc $lwc_ver"
-  curl --silent -Lo lwc.jar $lwc_url
+  mkdir -p $cache/lwc-$ver
+  cd $cache/lwc-$ver
+  echo -n "-----> Installing lwc $ver"
+  curl --silent -Lo lwc.jar $url
   echo " done"
 fi
 mkdir -p $build/lwc
-cp $cache/lwc-$lwc_ver/lwc.jar $build
+cp $cache/lwc-$ver/lwc.jar $build
 
 # partycloud
-partycloud_build="1"
-partycloud_url="http://funpack-assets.s3.amazonaws.com/Bukkit/partycloud.bukkit-$partycloud_build.tar.gz"
-if test -d $cache/partycloud-$partycloud_build
+ver="1"
+url="http://funpack-assets.s3.amazonaws.com/Bukkit/partycloud.bukkit-$ver.tar.gz"
+if test -d $cache/partycloud-$ver
 then
-  echo "-----> Using Partycloud $partycloud_build"
+  echo "-----> Using Partycloud $ver"
 else
-  mkdir -p $cache/partycloud-$partycloud_build
-  cd $cache/partycloud-$partycloud_build
-  echo -n "-----> Installing Partycloud $partycloud_build"
-  curl --silent -L $partycloud_url | tar xz
+  mkdir -p $cache/partycloud-$ver
+  cd $cache/partycloud-$ver
+  echo -n "-----> Installing Partycloud $ver"
+  curl --silent -L $url | tar xz
   echo " done"
 fi
-cp $cache/partycloud-$partycloud_build/partycloud.jar $build
+cp $cache/partycloud-$ver/partycloud.jar $build
 
 cd $funpack
 mkdir -p $build/bin
